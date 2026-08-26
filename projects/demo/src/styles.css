@@ -21,8 +21,27 @@
   color-scheme: light dark;
 }
 
+/* Wymuszenie motywu przełącznikiem — ma pierwszeństwo nad ustawieniem systemu. */
+:root[data-theme='dark'] {
+  --page-bg: #0c0e12;
+  --page-card: #16191d;
+  --page-hairline: rgb(255 255 255 / 10%);
+  --page-fg: #eef0f3;
+  --page-muted: #a8afb8;
+  --page-border: #454b53;
+  --page-surface: #1b1f25;
+  --page-accent: #8fb0ff;
+  --page-accent-fg: #10141a;
+  --page-danger: #f2b8b5;
+  color-scheme: dark;
+}
+
+:root[data-theme='light'] {
+  color-scheme: light;
+}
+
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme='light']) {
     --page-bg: #0c0e12;
     --page-card: #16191d;
     --page-hairline: rgb(255 255 255 / 10%);

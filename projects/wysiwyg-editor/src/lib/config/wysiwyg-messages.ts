@@ -100,6 +100,10 @@ export interface WysiwygMessages {
 
   // widok zrodla
   sourceView: string;
+  themeToDark: string;
+  themeToLight: string;
+  announceThemeDark: string;
+  announceThemeLight: string;
   sourceTextareaLabel: string;
   sourceHint: string;
   announceSourceOn: string;
@@ -208,6 +212,10 @@ export const WYSIWYG_MESSAGES_PL: WysiwygMessages = {
   announceImageWrap: (mode) => `Oblewanie: ${mode}`,
 
   sourceView: 'Widok źródła HTML',
+  themeToDark: 'Włącz motyw ciemny',
+  themeToLight: 'Włącz motyw jasny',
+  announceThemeDark: 'Motyw ciemny',
+  announceThemeLight: 'Motyw jasny',
   sourceTextareaLabel: 'Kod źródłowy HTML',
   sourceHint: 'Zmiany zostaną zastosowane po powrocie do widoku wizualnego.',
   announceSourceOn: 'Widok źródła HTML',

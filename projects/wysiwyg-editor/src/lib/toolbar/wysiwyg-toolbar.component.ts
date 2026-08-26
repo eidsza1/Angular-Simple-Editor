@@ -122,17 +122,29 @@ interface RenderedGroup {
         </div>
       }
 
-      @if (showSourceToggle()) {
+      @if (showSourceToggle() || showThemeToggle()) {
         <div role="group" class="wysiwyg-toolbar__group wysiwyg-toolbar__group--trailing"
              [attr.aria-label]="messages().groupView">
-          <button
-            wysiwygToolbarButton
-            [command]="sourceCommand"
-            [label]="messages().sourceView"
-            [pressed]="sourceMode()"
-            [disabledState]="false"
-            (activate)="toggleSource.emit()"
-          ></button>
+          @if (showSourceToggle()) {
+            <button
+              wysiwygToolbarButton
+              [command]="sourceCommand"
+              [label]="messages().sourceView"
+              [pressed]="sourceMode()"
+              [disabledState]="false"
+              (activate)="toggleSource.emit()"
+            ></button>
+          }
+          @if (showThemeToggle()) {
+            <button
+              wysiwygToolbarButton
+              [command]="themeCommand()"
+              [label]="darkTheme() ? messages().themeToLight : messages().themeToDark"
+              [pressed]="darkTheme()"
+              [disabledState]="false"
+              (activate)="toggleTheme.emit()"
+            ></button>
+          }
         </div>
       }
     </div>
@@ -146,10 +158,12 @@ export class WysiwygToolbarComponent {
   readonly ariaControls = input<string | null>(null);
   readonly disabled = input(false);
   readonly sourceMode = input(false);
+  readonly darkTheme = input(false);
 
   readonly command = output<CommandDescriptor>();
   readonly returnFocus = output<void>();
   readonly toggleSource = output<void>();
+  readonly toggleTheme = output<void>();
   /** `0` oznacza akapit; `1..6` to poziom nagłówka. */
   readonly headingSelected = output<number>();
   readonly applyLink = output<LinkSubmitEvent>();
@@ -231,6 +245,22 @@ export class WysiwygToolbarComponent {
   });
 
   protected readonly showSourceToggle = computed(() => this.features().includes('sourceView'));
+  protected readonly showThemeToggle = computed(() => this.features().includes('themeToggle'));
+
+  /**
+   * Ikona pokazuje motyw, KTÓRY ZOSTANIE WŁĄCZONY, a nie bieżący — tak samo jak etykieta
+   * („Włącz motyw ciemny"). Odwrotna konwencja myli: użytkownik widzi słońce i nie wie,
+   * czy właśnie jest jasno, czy kliknięcie rozjaśni.
+   */
+  protected readonly themeCommand = computed<CommandDescriptor>(() => ({
+    id: 'themeToggle' as CommandDescriptor['id'],
+    feature: 'themeToggle',
+    labelKey: this.darkTheme() ? 'themeToLight' : 'themeToDark',
+    icon: this.darkTheme() ? 'themeLight' : 'themeDark',
+    kind: 'toggle',
+    run: () => false,
+    canRun: () => true,
+  }));
 
   /**
    * Przełącznik widoku źródła NIE jest komendą edytora — nie zmienia dokumentu, tylko

@@ -19,10 +19,12 @@ import {
 import { NG_VALUE_ACCESSOR, type ControlValueAccessor } from '@angular/forms';
 import type { FocusPosition, JSONContent } from '@tiptap/core';
 import { WYSIWYG_EDITOR_CONFIG, WYSIWYG_MESSAGES } from './config/wysiwyg-config.tokens';
+import { OverlayContainer } from '@angular/cdk/overlay';
 import { WYSIWYG_SANITIZER } from './sanitize/sanitizer.token';
 import type { SanitizePolicy } from './sanitize/sanitize-policy';
 import { mergeWysiwygConfig, type DeepPartial, type WysiwygEditorConfig } from './config/wysiwyg-config.model';
 import type { WysiwygFeature } from './config/wysiwyg-feature.model';
+import type { WysiwygTheme } from './config/wysiwyg-config.model';
 import { WysiwygEditorCore } from './core/wysiwyg-editor-core';
 import { buildExtensions } from './core/extension-factory';
 import { nextWysiwygId } from './a11y/wysiwyg-id';
@@ -69,6 +71,8 @@ function setBooleanAria(el: Element, name: string, value: boolean): void {
       [disabled]="isDisabled() || readonly()"
       [ariaControls]="sourceMode() ? sourceId : contentId"
       [sourceMode]="sourceMode()"
+      [darkTheme]="darkTheme()"
+      (toggleTheme)="toggleTheme()"
       [headingLevels]="resolvedConfig().headingLevels"
       [alignments]="resolvedConfig().alignments"
       [currentHref]="currentHref()"
@@ -122,6 +126,7 @@ function setBooleanAria(el: Element, name: string, value: boolean): void {
   `,
 })
 export class WysiwygEditorComponent implements ControlValueAccessor, OnDestroy {
+  private readonly hostElement = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly hostRef = viewChild.required<ElementRef<HTMLElement>>('host');
   private readonly toolbarRef = viewChild.required<WysiwygToolbarComponent>('toolbar');
   private readonly baseConfig = inject(WYSIWYG_EDITOR_CONFIG);
@@ -130,6 +135,7 @@ export class WysiwygEditorComponent implements ControlValueAccessor, OnDestroy {
   protected readonly core = inject(WysiwygEditorCore);
   private readonly announcer = inject(WysiwygAnnouncer);
   private readonly injector = inject(Injector);
+  private readonly overlayContainer = inject(OverlayContainer);
   protected readonly messages = inject(WYSIWYG_MESSAGES);
 
   readonly contentId = nextWysiwygId('content');
@@ -147,8 +153,28 @@ export class WysiwygEditorComponent implements ControlValueAccessor, OnDestroy {
   readonly ariaLabelledby = input<string | null>(null, { alias: 'aria-labelledby' });
   readonly ariaDescribedby = input<string | null>(null, { alias: 'aria-describedby' });
 
+  /** Emitowane przy przełączeniu motywu — aplikacja może zsynchronizować resztę strony. */
+  readonly themeChange = output<WysiwygTheme>();
+
   readonly editorFocus = output<FocusEvent>();
   readonly editorBlur = output<FocusEvent>();
+
+  private readonly _theme = signal<WysiwygTheme>('system');
+  protected readonly theme = this._theme.asReadonly();
+
+  /**
+   * Czy AKTUALNIE obowiązuje motyw ciemny — także wtedy, gdy wynika to z ustawienia systemu.
+   *
+   * Przycisk musi pokazywać stan faktyczny, a nie samą wartość konfiguracji: przy `system`
+   * na ciemnym systemie napis „Włącz motyw ciemny" byłby mylący.
+   */
+  protected readonly darkTheme = computed(() => {
+    const t = this._theme();
+    if (t !== 'system') {
+      return t === 'dark';
+    }
+    return typeof matchMedia === 'function' && matchMedia('(prefers-color-scheme: dark)').matches;
+  });
 
   private readonly _hasFocus = signal(false);
   protected readonly hasFocus = this._hasFocus.asReadonly();
@@ -193,7 +219,10 @@ export class WysiwygEditorComponent implements ControlValueAccessor, OnDestroy {
   constructor() {
     // Wyłącznie tutaj. `afterNextRender` nie odpala się na serwerze, więc `new Editor()`
     // nigdy nie sięgnie po `document` podczas SSR.
-    afterNextRender(() => this.createEditor());
+    afterNextRender(() => {
+      this.setTheme(this.resolvedConfig().theme);
+      this.createEditor();
+    });
 
     effect(() => {
       const editable = this.isEditable();
@@ -459,6 +488,37 @@ export class WysiwygEditorComponent implements ControlValueAccessor, OnDestroy {
       this.sourceRef()?.nativeElement.focus();
     } else {
       this.core.focus();
+    }
+  }
+
+  /**
+   * Przełącza motyw jasny ↔ ciemny.
+   *
+   * Atrybut trafia na host edytora ORAZ na kontener overlaya CDK. Ten drugi jest doczepiony
+   * do `<body>`, czyli poza drzewem edytora — bez tego rozwijane menu i popovery zostawałyby
+   * w poprzednim motywie.
+   */
+  toggleTheme(): void {
+    const next: WysiwygTheme = this.darkTheme() ? 'light' : 'dark';
+    this.setTheme(next);
+    this.announcer.polite(next === 'dark' ? this.messages.announceThemeDark : this.messages.announceThemeLight);
+  }
+
+  setTheme(theme: WysiwygTheme): void {
+    this._theme.set(theme);
+    this.applyTheme(theme);
+    this.themeChange.emit(theme);
+  }
+
+  private applyTheme(theme: WysiwygTheme): void {
+    const host = this.hostElement.nativeElement;
+    const overlay = this.overlayContainer.getContainerElement();
+    for (const el of [host, overlay]) {
+      if (theme === 'system') {
+        el.removeAttribute('data-theme');
+      } else {
+        el.setAttribute('data-theme', theme);
+      }
     }
   }
 

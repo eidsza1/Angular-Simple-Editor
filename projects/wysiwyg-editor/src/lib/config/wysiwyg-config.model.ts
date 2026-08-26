@@ -29,6 +29,11 @@ export interface WysiwygImageConfig {
   readonly maxInlineBytes: number;
 }
 
+/**
+ * `system` oznacza podążanie za `prefers-color-scheme`; pozostałe wartości wymuszają motyw.
+ */
+export type WysiwygTheme = 'system' | 'light' | 'dark';
+
 export interface WysiwygEditorConfig {
   readonly features: readonly WysiwygFeature[];
   readonly headingLevels: readonly HeadingLevel[];
@@ -49,6 +54,8 @@ export interface WysiwygEditorConfig {
    */
   readonly useTextboxRole: boolean;
   readonly stickyToolbar: boolean;
+  /** Motyw początkowy. Przycisk w pasku przełącza go w trakcie pracy. */
+  readonly theme: WysiwygTheme;
   /**
    * Szerokość kolumny treści w wariancie „kartki" (`class="wysiwyg--paper"`).
    *
@@ -85,12 +92,14 @@ export const WYSIWYG_DEFAULT_CONFIG: WysiwygEditorConfig = {
     'textAlign',
     'image',
     'sourceView',
+    'themeToggle',
   ],
   headingLevels: [1, 2, 3, 4, 5, 6],
   alignments: ALL_TEXT_ALIGNMENTS,
   enableInputRules: true,
   useTextboxRole: true,
   stickyToolbar: false,
+  theme: 'system',
   paperMaxWidth: '44rem',
   image: {
     accept: 'image/png,image/jpeg,image/webp,image/gif,image/avif',

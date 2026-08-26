@@ -29,6 +29,7 @@ export type WysiwygFeature =
   | 'image'
   // widok
   | 'sourceView'
+  | 'themeToggle'
   // historia
   | 'undoRedo';
 
@@ -50,6 +51,7 @@ export const ALL_WYSIWYG_FEATURES: readonly WysiwygFeature[] = [
   'textAlign',
   'image',
   'sourceView',
+  'themeToggle',
   'undoRedo',
 ] as const;
 

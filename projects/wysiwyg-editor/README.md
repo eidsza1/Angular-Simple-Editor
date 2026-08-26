@@ -22,7 +22,7 @@ bez `alt`, żadna ilość ARIA tego nie naprawi.
 | Bloki | nagłówki H1–H6, listy punktowane i numerowane, cytat, blok kodu |
 | Układ | wyrównanie do lewej, wyśrodkowanie, do prawej, justowanie |
 | Obrazy | wgrywanie, przeciągnij i upuść, zmiana rozmiaru, oblewanie tekstem, wymagany tekst alternatywny |
-| Widok | przełącznik podglądu i edycji źródła HTML |
+| Widok | przełącznik podglądu i edycji źródła HTML, przełącznik motywu jasny/ciemny |
 | Integracja | `ControlValueAccessor`, czyli `formControlName` i `[(ngModel)]` |
 | Bezpieczeństwo | sanityzacja na wejściu, przy wklejaniu, w widoku źródła i na wyjściu |
 
@@ -106,7 +106,7 @@ features: [
   'superscript', 'subscript',
   'textAlign',
   'image',
-  'sourceView',
+  'sourceView', 'themeToggle',
 ]
 ```
 
@@ -117,6 +117,7 @@ features: [
 | `headingLevels` | `[1,2,3,4,5,6]` | Poziomy w menu nagłówków. Warto ograniczać — H1 zwykle należy do szablonu strony, nie do treści |
 | `alignments` | wszystkie cztery | Zawężenie zestawu wyrównań; usunięcie wpisu chowa przycisk |
 | `paperMaxWidth` | `44rem` | Szerokość kolumny treści. Podawaj w `rem` — w `px` przy powiększeniu 200 % zostaje kilka słów w wierszu |
+| `theme` | `'system'` | Motyw początkowy: `system` (za `prefers-color-scheme`), `light` albo `dark`. Przycisk w pasku przełącza go w trakcie pracy |
 | `stickyToolbar` | `false` | Pasek przyklejony przy przewijaniu |
 | `enableInputRules` | `true` | Podstawienia: `- ` → lista, `# ` → nagłówek |
 | `image.upload` | brak | `(file, signal) => Promise<{ src }>`. Bez tego zostaje tylko pole adresu URL |
@@ -168,9 +169,22 @@ przez sanityzację** — pole tekstowe jest pełnoprawną drogą wejścia HTML.
 
 ![Motyw ciemny](../../docs/screenshots/08-ciemny.png)
 
-Motyw idzie za `prefers-color-scheme`; można go wymusić atrybutem `data-theme="dark"`
-albo `"light"`. Obsłużony jest także tryb wysokiego kontrastu (`forced-colors`) — ikony są
-rysowane w `currentColor`, bo ikonofonty i tła graficzne w tym trybie znikają.
+Motyw ustawiasz w konfiguracji (`theme`), a użytkownik przełącza go **przyciskiem ze
+słońcem i księżycem** po prawej stronie paska. Etykieta i ikona opisują motyw, który
+zostanie włączony, a nie bieżący — odwrotna konwencja myli.
+
+Atrybut `data-theme` trafia na host edytora **oraz** na kontener overlaya CDK. Ten drugi
+wisi przy `<body>`, poza drzewem edytora, więc bez tego rozwijane menu i popovery zostawałyby
+w poprzednim motywie.
+
+Komponent emituje `themeChange`, dzięki czemu aplikacja może zsynchronizować resztę strony:
+
+```html
+<wysiwyg-editor formControlName="opis" (themeChange)="ustawMotywStrony($event)" />
+```
+
+Obsłużony jest także tryb wysokiego kontrastu (`forced-colors`) — ikony są rysowane
+w `currentColor`, bo ikonofonty i tła graficzne w tym trybie znikają.
 
 ## Bezpieczeństwo
 

@@ -43,6 +43,7 @@ export const WYSIWYG_CONFIG: DeepPartial<WysiwygEditorConfig> = {
 
     // --- widok ---
     'sourceView',
+    'themeToggle',
   ],
 
   /**
@@ -90,6 +91,12 @@ export const WYSIWYG_CONFIG: DeepPartial<WysiwygEditorConfig> = {
    * razem z nim. Wartość w pikselach dawałaby przy 200 % kilka słów w wierszu.
    */
   paperMaxWidth: '56rem',
+
+  /**
+   * Motyw początkowy: `system` (za ustawieniem przeglądarki), `light` albo `dark`.
+   * Przycisk ze słońcem/księżycem w pasku przełącza go w trakcie pracy.
+   */
+  theme: 'dark',
 
   /** Pasek przyklejony do górnej krawędzi przy przewijaniu długiej treści. */
   stickyToolbar: false,

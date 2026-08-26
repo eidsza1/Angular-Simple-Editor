@@ -34,6 +34,19 @@ Dłuższe listingi trafiają do osobnego bloku:</p>
 ]</code></pre>
 `.trim();
 
+/**
+ * Pozwala otworzyć demo od razu w wybranym motywie: `?motyw=ciemny` albo `?motyw=jasny`.
+ * Bez parametru decyduje ustawienie systemu.
+ */
+function odczytajMotywZAdresu(): 'dark' | 'light' | null {
+  const wartosc = new URLSearchParams(location.search).get('motyw');
+  const motyw = wartosc === 'ciemny' ? 'dark' : wartosc === 'jasny' ? 'light' : null;
+  if (motyw) {
+    document.documentElement.setAttribute('data-theme', motyw);
+  }
+  return motyw;
+}
+
 /** Wymusza treść inną niż sam pusty akapit — `<p></p>` to „puste" dla użytkownika. */
 function notBlankHtml(control: { value: string | null }): Record<string, boolean> | null {
   const text = (control.value ?? '').replace(/<[^>]*>/g, '').trim();
@@ -65,6 +78,27 @@ export class App {
 
   protected readonly html = computed(() => this.formValue().content ?? '');
   protected readonly isInvalid = computed(() => this.formStatus() === 'INVALID');
+
+  /**
+   * Wymuszony motyw. `null` oznacza „idź za ustawieniem systemu".
+   *
+   * Atrybut trafia na `<html>`, a nie na komponent, bo tło strony i kontener overlaya CDK
+   * (menu, popovery) żyją poza drzewem edytora i inaczej zostałyby w starym motywie.
+   */
+  protected readonly motyw = signal<'dark' | 'light' | null>(odczytajMotywZAdresu());
+
+  /**
+   * Motyw przełącza przycisk W PASKU edytora; aplikacja tylko odzwierciedla wybór na
+   * `<html>`, żeby tło strony i pozostałe elementy poszły za edytorem.
+   */
+  protected onMotywZmieniony(motyw: 'system' | 'light' | 'dark'): void {
+    this.motyw.set(motyw === 'system' ? null : motyw);
+    if (motyw === 'system') {
+      document.documentElement.removeAttribute('data-theme');
+    } else {
+      document.documentElement.setAttribute('data-theme', motyw);
+    }
+  }
 
   protected readonly isDisabled = signal(false);
   protected readonly submitted = signal<string | null>(null);

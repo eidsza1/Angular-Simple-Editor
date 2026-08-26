@@ -16,6 +16,7 @@
         formControlName="content"
         aria-labelledby="editor-label"
         [attr.aria-describedby]="isInvalid() && contentControl.touched ? 'editor-hint editor-error' : 'editor-hint'"
+        (themeChange)="onMotywZmieniony($event)"
       />
     </div>
 

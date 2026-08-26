@@ -399,3 +399,42 @@ test.describe('pisanie w środku dokumentu', () => {
     expect(poId, 'obraz został przebudowany przy pisaniu').toBe('ten-sam');
   });
 });
+
+test.describe('przełącznik motywu', () => {
+  test('startuje z motywem z konfiguracji i przełącza host, overlay oraz stronę', async ({ page }) => {
+    // Konfiguracja demo: theme: 'dark'.
+    await expect(page.locator('wysiwyg-editor')).toHaveAttribute('data-theme', 'dark');
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+
+    const przycisk = page.getByRole('button', { name: /Włącz motyw/ });
+    await expect(przycisk).toHaveAttribute('aria-pressed', 'true');
+
+    await przycisk.click();
+
+    await expect(page.locator('wysiwyg-editor')).toHaveAttribute('data-theme', 'light');
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
+    // Kontener overlaya CDK wisi przy <body>, poza edytorem — musi iść za motywem,
+    // inaczej rozwijane menu zostaje w poprzednim.
+    await expect(page.locator('.cdk-overlay-container')).toHaveAttribute('data-theme', 'light');
+  });
+
+  test('etykieta opisuje motyw, KTÓRY ZOSTANIE WŁĄCZONY', async ({ page }) => {
+    const przycisk = page.getByRole('button', { name: /Włącz motyw/ });
+    // Start w ciemnym, więc przycisk proponuje jasny.
+    await expect(przycisk).toHaveAttribute('aria-label', 'Włącz motyw jasny');
+    await przycisk.click();
+    await expect(page.getByRole('button', { name: /Włącz motyw/ })).toHaveAttribute(
+      'aria-label',
+      'Włącz motyw ciemny',
+    );
+  });
+
+  test('rozwijane menu dziedziczy motyw', async ({ page }) => {
+    await page.getByRole('button', { name: 'Poziom nagłówka' }).click();
+    await expect(page.locator('[role="menuitemradio"]').first()).toBeVisible();
+
+    const tlo = await page.locator('.wysiwyg-menu').evaluate((e) => getComputedStyle(e).backgroundColor);
+    // Ciemny motyw z konfiguracji — menu nie może zostać białe.
+    expect(tlo).not.toBe('rgb(255, 255, 255)');
+  });
+});

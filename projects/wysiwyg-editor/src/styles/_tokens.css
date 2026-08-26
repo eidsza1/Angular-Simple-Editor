@@ -61,6 +61,15 @@
   }
 }
 
+/*
+ * Motyw wymuszony atrybutem `data-theme`.
+ *
+ * Dwa warianty selektora są potrzebne: atrybut na SAMYM edytorze (przełączanie pojedynczej
+ * instancji) oraz na dowolnym PRZODKU, np. `<html>` — tak działa globalny przełącznik
+ * motywu w aplikacji. Kontener overlaya CDK wisi przy `<body>`, więc też musi być objęty.
+ */
+[data-theme='dark'] .wysiwyg,
+[data-theme='dark'] .cdk-overlay-container,
 .wysiwyg[data-theme='dark'],
 .cdk-overlay-container[data-theme='dark'] {
   --wysiwyg-bg: #16191d;
