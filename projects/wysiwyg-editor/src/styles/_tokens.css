@@ -1,0 +1,82 @@
+/*
+ * Tokeny kolorów i wymiarów. Motyw jasny jako baza, ciemny wyłącznie jako nadpisanie tych
+ * samych tokenów — żaden kolor nie ma swojej JEDYNEJ definicji w bloku @media.
+ *
+ * Selektor obejmuje TAKŻE `.cdk-overlay-container`, i to nie jest ozdobnik: CDK renderuje
+ * menu i popovery w kontenerze doczepionym do `<body>`, czyli POZA elementem `.wysiwyg`.
+ * Gdyby tokeny żyły tylko na `.wysiwyg`, overlaye nie odziedziczyłyby żadnego z nich —
+ * tła i obramowania wychodziłyby przezroczyste, a motyw ciemny i tryb wysokiego kontrastu
+ * w ogóle by w nich nie działały.
+ *
+ * Kontrasty zmierzone i udokumentowane w README (SC 1.4.3 tekst 4.5:1, SC 1.4.11 ikony
+ * i obramowania 3:1).
+ */
+.wysiwyg,
+.cdk-overlay-container {
+  --wysiwyg-bg: #ffffff;
+  --wysiwyg-fg: #16191d;
+  --wysiwyg-muted: #5c636b;
+  --wysiwyg-border: #767c85;
+  --wysiwyg-border-subtle: #d3d7dc;
+  --wysiwyg-surface: #f4f5f7;
+  --wysiwyg-surface-hover: #e6e8ec;
+  --wysiwyg-accent: #1c4fd8;
+  --wysiwyg-accent-fg: #ffffff;
+  --wysiwyg-focus: #1c4fd8;
+  --wysiwyg-focus-halo: rgb(28 79 216 / 25%);
+  --wysiwyg-disabled-fg: #6b7280;
+
+  /* Wariant „kartka dokumentu" — szare tło obszaru i biała strona w środku. */
+  --wysiwyg-canvas: #f4f5f7;
+  --wysiwyg-paper: #ffffff;
+  --wysiwyg-paper-shadow: 0 1px 3px rgb(16 19 23 / 8%), 0 8px 24px rgb(16 19 23 / 4%);
+  --wysiwyg-paper-max: 44rem;
+  --wysiwyg-icon: #4a5058;
+
+  --wysiwyg-radius: 4px;
+  --wysiwyg-toolbar-h: 44px;
+  --wysiwyg-gap: 4px;
+  --wysiwyg-content-min-h: 12rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  .wysiwyg:not([data-theme='light']),
+  .cdk-overlay-container {
+    --wysiwyg-bg: #16191d;
+    --wysiwyg-fg: #eef0f3;
+    --wysiwyg-muted: #a8afb8;
+    --wysiwyg-border: #8d949d;
+    --wysiwyg-border-subtle: #3a3f46;
+    --wysiwyg-surface: #22262c;
+    --wysiwyg-surface-hover: #2e343b;
+    --wysiwyg-accent: #8fb0ff;
+    --wysiwyg-accent-fg: #10141a;
+    --wysiwyg-focus: #8fb0ff;
+    --wysiwyg-focus-halo: rgb(143 176 255 / 30%);
+    --wysiwyg-disabled-fg: #8b929b;
+    --wysiwyg-canvas: #101318;
+    --wysiwyg-paper: #191d23;
+    --wysiwyg-paper-shadow: 0 1px 3px rgb(0 0 0 / 40%), 0 8px 24px rgb(0 0 0 / 24%);
+    --wysiwyg-icon: #c2c8d0;
+  }
+}
+
+.wysiwyg[data-theme='dark'],
+.cdk-overlay-container[data-theme='dark'] {
+  --wysiwyg-bg: #16191d;
+  --wysiwyg-fg: #eef0f3;
+  --wysiwyg-muted: #a8afb8;
+  --wysiwyg-border: #8d949d;
+  --wysiwyg-border-subtle: #3a3f46;
+  --wysiwyg-surface: #22262c;
+  --wysiwyg-surface-hover: #2e343b;
+  --wysiwyg-accent: #8fb0ff;
+  --wysiwyg-accent-fg: #10141a;
+  --wysiwyg-focus: #8fb0ff;
+  --wysiwyg-focus-halo: rgb(143 176 255 / 30%);
+  --wysiwyg-disabled-fg: #8b929b;
+  --wysiwyg-canvas: #101318;
+  --wysiwyg-paper: #191d23;
+  --wysiwyg-paper-shadow: 0 1px 3px rgb(0 0 0 / 40%), 0 8px 24px rgb(0 0 0 / 24%);
+  --wysiwyg-icon: #c2c8d0;
+}

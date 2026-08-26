@@ -1,0 +1,54 @@
+/*
+ * Style biblioteki. Zawierają wymagane importy CDK (a11y-prebuilt, overlay-prebuilt).
+ *
+ * Demo sięga po ŹRÓDŁA biblioteki, żeby zmiany w CSS były widoczne bez przebudowy libki.
+ * Konsument po instalacji z npm użyje zamiast tego:
+ *     @import 'wysiwyg-editor/styles/wysiwyg-editor.css';
+ */
+@import '../../wysiwyg-editor/src/styles/wysiwyg-editor.css';
+
+:root {
+  --page-bg: #f0f1f3;
+  --page-card: #ffffff;
+  --page-hairline: rgb(16 19 23 / 8%);
+  --page-fg: #16191d;
+  --page-muted: #5c636b;
+  --page-border: #b7bcc4;
+  --page-surface: #f4f5f7;
+  --page-accent: #1c4fd8;
+  --page-accent-fg: #ffffff;
+  --page-danger: #b3261e;
+  color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --page-bg: #0c0e12;
+    --page-card: #16191d;
+    --page-hairline: rgb(255 255 255 / 10%);
+    --page-fg: #eef0f3;
+    --page-muted: #a8afb8;
+    --page-border: #454b53;
+    --page-surface: #1b1f25;
+    --page-accent: #8fb0ff;
+    --page-accent-fg: #10141a;
+    --page-danger: #f2b8b5;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-block-size: 100dvh;
+  background: var(--page-bg);
+  color: var(--page-fg);
+  font-family:
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    sans-serif;
+  line-height: 1.5;
+}

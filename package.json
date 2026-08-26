@@ -1,0 +1,51 @@
+{
+  "name": "simple-editor",
+  "version": "0.0.0",
+  "scripts": {
+    "ng": "ng",
+    "start": "ng serve demo",
+    "build": "ng build wysiwyg-editor",
+    "build:demo": "ng build demo",
+    "watch": "ng build wysiwyg-editor --watch --configuration development",
+    "test": "ng test wysiwyg-editor",
+    "test:browser": "ng run wysiwyg-editor:test-browser",
+    "e2e": "playwright test",
+    "e2e:a11y": "playwright test e2e/a11y.spec.ts"
+  },
+  "private": true,
+  "packageManager": "npm@11.17.0",
+  "dependencies": {
+    "@angular/cdk": "^22.1.3",
+    "@angular/common": "^22.1.0",
+    "@angular/compiler": "^22.1.0",
+    "@angular/core": "^22.1.0",
+    "@angular/forms": "^22.1.0",
+    "@angular/platform-browser": "^22.1.0",
+    "@angular/router": "^22.1.0",
+    "@tiptap/core": "^3.30.3",
+    "@tiptap/extension-highlight": "^3.30.3",
+    "@tiptap/extension-image": "^3.30.3",
+    "@tiptap/extension-subscript": "^3.30.3",
+    "@tiptap/extension-superscript": "^3.30.3",
+    "@tiptap/extension-text-align": "^3.30.3",
+    "@tiptap/pm": "^3.30.3",
+    "@tiptap/starter-kit": "^3.30.3",
+    "dompurify": "^3.4.14",
+    "rxjs": "~7.8.0",
+    "tslib": "^2.3.0"
+  },
+  "devDependencies": {
+    "@angular/build": "^22.1.5",
+    "@angular/cli": "^22.1.5",
+    "@angular/compiler-cli": "^22.1.0",
+    "@axe-core/playwright": "^4.13.0",
+    "@playwright/test": "^1.62.1",
+    "@vitest/browser-playwright": "^4.1.11",
+    "axe-core": "^4.13.0",
+    "jsdom": "^28.0.0",
+    "ng-packagr": "^22.1.0",
+    "prettier": "^3.8.1",
+    "typescript": "~6.0.2",
+    "vitest": "^4.0.8"
+  }
+}

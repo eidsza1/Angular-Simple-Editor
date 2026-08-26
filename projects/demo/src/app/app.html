@@ -1,0 +1,45 @@
+<header class="page__header">
+  <h1>Edytor WYSIWYG</h1>
+  <p class="page__lead">Angular 22 + Tiptap 3, zgodność z WCAG 2.2 AA.</p>
+</header>
+
+<main class="page__main">
+  <form [formGroup]="form" (ngSubmit)="submit()">
+    <!-- Etykieta jest ZEWNĘTRZNA i powiązana przez aria-labelledby.
+         <label for> NIE zadziała: div[contenteditable] nie jest elementem etykietowalnym. -->
+    <h2 id="editor-label" class="visually-hidden">Treść dokumentu</h2>
+    <p id="editor-hint" class="visually-hidden">Pole obsługuje formatowanie tekstu. Wymagane.</p>
+
+    <div class="editor-card">
+      <wysiwyg-editor
+        class="wysiwyg--paper"
+        formControlName="content"
+        aria-labelledby="editor-label"
+        [attr.aria-describedby]="isInvalid() && contentControl.touched ? 'editor-hint editor-error' : 'editor-hint'"
+      />
+    </div>
+
+    @if (isInvalid() && contentControl.touched) {
+      <p id="editor-error" class="field-error" role="alert">Treść nie może być pusta.</p>
+    }
+
+    <div class="toolbar-row">
+      <button type="submit" class="btn btn--primary">Zapisz</button>
+      <button type="button" class="btn" (click)="toggleDisabled()">
+        {{ isDisabled() ? 'Włącz pole' : 'Wyłącz pole' }}
+      </button>
+      <button type="button" class="btn" (click)="loadDirty()">Wczytaj brudny HTML</button>
+      <button type="button" class="btn" (click)="reset()">Reset</button>
+
+      <dl class="state">
+        <div><dt>status</dt><dd>{{ contentControl.status }}</dd></div>
+        <div><dt>dirty</dt><dd>{{ contentControl.dirty }}</dd></div>
+        <div><dt>touched</dt><dd>{{ contentControl.touched }}</dd></div>
+      </dl>
+    </div>
+
+    @if (submitted(); as saved) {
+      <p class="saved" role="status">Zapisano {{ saved.length }} znaków.</p>
+    }
+  </form>
+</main>

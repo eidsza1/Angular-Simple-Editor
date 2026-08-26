@@ -1,0 +1,78 @@
+/*
+ * Tryb wysokiego kontrastu (Windows Contrast Themes, forced-colors).
+ *
+ * Krytyczne: system NADPISUJE tła, więc stanu „wciśnięty" nie wolno wyrażać samym
+ * `background-color` — dokładamy grubość obramowania. Z tego samego powodu ikony muszą być
+ * inline SVG z `currentColor` albo realnym tekstem; font ikon i `background-image` znikają.
+ */
+@media (forced-colors: active) {
+  .wysiwyg {
+    border: 1px solid CanvasText;
+  }
+
+  .wysiwyg-toolbar {
+    border-block-end: 1px solid CanvasText;
+  }
+
+  .wysiwyg-btn {
+    border: 1px solid ButtonText;
+    color: ButtonText;
+    background: ButtonFace;
+  }
+
+  .wysiwyg-btn--active {
+    border-width: 2px;
+    background: Highlight;
+    color: HighlightText;
+  }
+
+  .wysiwyg-btn--disabled {
+    color: GrayText;
+    border-color: GrayText;
+  }
+
+  .wysiwyg-btn:focus-visible {
+    outline: 2px solid Highlight;
+    outline-offset: 2px;
+    /* `box-shadow` nie renderuje się w forced-colors — sam outline musi wystarczyć. */
+    box-shadow: none;
+  }
+
+  .wysiwyg--focused {
+    outline: 2px solid Highlight;
+    box-shadow: none;
+  }
+
+  .wysiwyg-icon svg {
+    stroke: currentColor;
+    forced-color-adjust: auto;
+  }
+
+  .wysiwyg__content-editable mark {
+    background: Highlight;
+    color: HighlightText;
+  }
+
+  /* Menu i popovery żyją w kontenerze CDK poza `.wysiwyg` — muszą mieć własne reguły. */
+  .wysiwyg-menu,
+  .wysiwyg-popover {
+    border: 1px solid CanvasText;
+    background: Canvas;
+    color: CanvasText;
+  }
+
+  .wysiwyg-menu__item[aria-checked='true'] {
+    background: Highlight;
+    color: HighlightText;
+  }
+
+  .wysiwyg-menu__item[aria-checked='true'] .wysiwyg-menu__icon {
+    color: HighlightText;
+  }
+
+  .wysiwyg-menu__item:focus-visible,
+  .wysiwyg-popover__input:focus-visible,
+  .wysiwyg-popover__btn:focus-visible {
+    outline: 2px solid Highlight;
+  }
+}

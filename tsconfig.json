@@ -1,0 +1,43 @@
+/* To learn more about Typescript configuration file: https://www.typescriptlang.org/docs/handbook/tsconfig-json.html. */
+/* To learn more about Angular compiler options: https://angular.dev/reference/configs/angular-compiler-options. */
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+    "noImplicitOverride": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "skipLibCheck": true,
+    "isolatedModules": true,
+    "experimentalDecorators": true,
+    "importHelpers": true,
+    "target": "ES2022",
+    "module": "preserve",
+    // Demo konsumuje ŹRÓDŁA biblioteki, nie `dist/`. Dzięki temu `ng serve demo` przeładowuje
+    // zmiany w libce od razu i nie wywala się, gdy `ng build wysiwyg-editor` podmienia `dist/`
+    // pod nogami działającemu serwerowi. Odbiorcy paczki z npm i tak dostają `dist/`.
+    "paths": {
+      "wysiwyg-editor": ["./projects/wysiwyg-editor/src/public-api.ts"]
+    }
+  },
+  "angularCompilerOptions": {
+    "enableI18nLegacyMessageIdFormat": false,
+    "strictInjectionParameters": true,
+    "strictInputAccessModifiers": true
+  },
+  "files": [],
+  "references": [
+    {
+      "path": "./projects/wysiwyg-editor/tsconfig.lib.json"
+    },
+    {
+      "path": "./projects/wysiwyg-editor/tsconfig.spec.json"
+    },
+    {
+      "path": "./projects/demo/tsconfig.app.json"
+    },
+    {
+      "path": "./projects/demo/tsconfig.spec.json"
+    }
+  ]
+}

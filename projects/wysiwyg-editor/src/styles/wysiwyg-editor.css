@@ -1,0 +1,15 @@
+/*
+ * Jedyny plik CSS, który konsument musi zaimportować.
+ *
+ * Dwa importy z CDK są OBOWIĄZKOWE, nie opcjonalne:
+ *  - a11y-prebuilt   definiuje `.cdk-visually-hidden`, na której opiera się LiveAnnouncer.
+ *                    Bez niego komunikaty dla czytników wyświetlają się jako WIDOCZNY tekst.
+ *  - overlay-prebuilt bez niego CDK Dialog/Overlay jest niepozycjonowany.
+ */
+@import '@angular/cdk/a11y-prebuilt.css';
+@import '@angular/cdk/overlay-prebuilt.css';
+
+@import './_tokens.css';
+@import './_prosemirror.css';
+@import './_toolbar.css';
+@import './_forced-colors.css';

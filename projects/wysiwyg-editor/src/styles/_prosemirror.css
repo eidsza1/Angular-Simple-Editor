@@ -1,0 +1,744 @@
+.wysiwyg {
+  display: flex;
+  flex-direction: column;
+  color: var(--wysiwyg-fg);
+  background: var(--wysiwyg-bg);
+  border: 1px solid var(--wysiwyg-border);
+  border-radius: var(--wysiwyg-radius);
+}
+
+.wysiwyg__scroll {
+  overflow: auto;
+}
+
+.wysiwyg__content-editable {
+  min-block-size: var(--wysiwyg-content-min-h);
+  padding: 0.75rem 1rem;
+  outline: none;
+  /* Treść nie może wymuszać poziomego przewijania strony przy 400 % (SC 1.4.10). */
+  overflow-wrap: break-word;
+  /*
+   * Domyka floaty (oblewane obrazy) wewnątrz obszaru edycji.
+   *
+   * Bez tego element z `float` nie jest wliczany do wysokości rodzica: obraz wypływał poza
+   * białą kartkę, a układ się rozjeżdżał. `flow-root` tworzy kontekst formatowania blokowego
+   * bez skutków ubocznych `overflow: hidden`, który obcinałby uchwyty i pasek narzędzi.
+   */
+  display: flow-root;
+}
+
+/* Widoczny wskaźnik fokusu na całym edytorze, gdy kursor jest w treści (SC 2.4.7).
+   `outline` na samym contenteditable byłby przycięty przez kontener przewijania. */
+.wysiwyg--focused {
+  outline: 2px solid var(--wysiwyg-focus);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px var(--wysiwyg-focus-halo);
+}
+
+.wysiwyg--disabled,
+.wysiwyg--readonly {
+  background: var(--wysiwyg-surface);
+}
+
+.wysiwyg--disabled .wysiwyg__content-editable {
+  color: var(--wysiwyg-disabled-fg);
+}
+
+/* Rytm pionowy treści */
+.wysiwyg__content-editable > :first-child {
+  margin-block-start: 0;
+}
+
+.wysiwyg__content-editable > :last-child {
+  margin-block-end: 0;
+}
+
+.wysiwyg__content-editable :is(h1, h2, h3, h4, h5, h6) {
+  margin-block: 1.2em 0.5em;
+  line-height: 1.25;
+}
+
+.wysiwyg__content-editable p {
+  margin-block: 0 0.75em;
+  line-height: 1.6;
+}
+
+.wysiwyg__content-editable :is(ul, ol) {
+  margin-block: 0 0.75em;
+  padding-inline-start: 1.75em;
+}
+
+.wysiwyg__content-editable li {
+  margin-block: 0.25em;
+}
+
+.wysiwyg__content-editable blockquote {
+  margin-inline: 0;
+  padding-inline-start: 1em;
+  border-inline-start: 3px solid var(--wysiwyg-border);
+  color: var(--wysiwyg-muted);
+}
+
+.wysiwyg__content-editable a {
+  color: var(--wysiwyg-accent);
+  /* Podkreślenie, nie sam kolor — SC 1.4.1 Use of Color. */
+  text-decoration: underline;
+}
+
+.wysiwyg__content-editable img {
+  max-inline-size: 100%;
+  block-size: auto;
+}
+
+/* Kursor między blokami (gapcursor) — musi być widoczny, to jedyna wskazówka pozycji. */
+.ProseMirror-gapcursor::after {
+  border-block-start: 2px solid var(--wysiwyg-fg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wysiwyg,
+  .wysiwyg *,
+  .cdk-overlay-container * {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/*
+ * Wariant „kartka dokumentu": szare tło obszaru roboczego i biała strona w środku.
+ * Opcjonalny — biblioteka bez tej klasy renderuje zwykłe pole formularza.
+ */
+.wysiwyg--paper .wysiwyg__scroll {
+  background: var(--wysiwyg-canvas);
+  padding: 2.5rem 1.5rem;
+}
+
+.wysiwyg--paper .wysiwyg__host {
+  max-inline-size: var(--wysiwyg-paper-max);
+  margin-inline: auto;
+  background: var(--wysiwyg-paper);
+  border-radius: 6px;
+  box-shadow: var(--wysiwyg-paper-shadow);
+}
+
+.wysiwyg--paper .wysiwyg__content-editable {
+  padding: 3.5rem 4rem;
+  min-block-size: 26rem;
+}
+
+/* Przy wąskim widoku marginesy kartki muszą ustąpić, inaczej tekst robi się nieczytelny. */
+@media (max-width: 40rem) {
+  .wysiwyg--paper .wysiwyg__scroll {
+    padding: 1rem 0.5rem;
+  }
+
+  .wysiwyg--paper .wysiwyg__content-editable {
+    padding: 1.5rem 1.25rem;
+  }
+}
+
+.wysiwyg__scroll--hidden {
+  display: none;
+}
+
+/* --- Widok źródła HTML --- */
+
+.wysiwyg__source-wrap {
+  display: flex;
+  flex-direction: column;
+  background: var(--wysiwyg-canvas);
+  padding: 1rem;
+}
+
+.wysiwyg__source {
+  inline-size: 100%;
+  min-block-size: 22rem;
+  resize: vertical;
+  padding: 1rem;
+  border: 1px solid var(--wysiwyg-border);
+  border-radius: 6px;
+  background: var(--wysiwyg-paper);
+  color: var(--wysiwyg-fg);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.8125rem;
+  line-height: 1.6;
+  tab-size: 2;
+}
+
+.wysiwyg__source:focus-visible {
+  outline: 2px solid var(--wysiwyg-focus);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px var(--wysiwyg-focus-halo);
+}
+
+.wysiwyg__source-hint {
+  margin-block: 0.5rem 0;
+  color: var(--wysiwyg-muted);
+  font-size: 0.8125rem;
+}
+
+/* Treść dokumentu: podświetlenie i kod. */
+.wysiwyg__content-editable mark {
+  background: #fef3a7;
+  color: #1a1400;
+  padding: 0.05em 0.15em;
+  border-radius: 2px;
+}
+
+.wysiwyg__content-editable code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.875em;
+  background: var(--wysiwyg-surface);
+  padding: 0.15em 0.35em;
+  border-radius: 3px;
+}
+
+.wysiwyg__content-editable pre {
+  background: var(--wysiwyg-surface);
+  padding: 1rem 1.25rem;
+  border-radius: 6px;
+  overflow-x: auto;
+}
+
+.wysiwyg__content-editable pre code {
+  background: none;
+  padding: 0;
+}
+
+/* --- Kontener wgrywania obrazu --- */
+
+.wysiwyg-upload {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-block: 1rem;
+  padding: 1rem;
+  border: 1px dashed var(--wysiwyg-border);
+  border-radius: 8px;
+  background: var(--wysiwyg-surface);
+}
+
+.wysiwyg-upload__zone {
+  flex: 1 1 100%;
+  text-align: center;
+  padding: 1.5rem 1rem;
+  border-radius: 6px;
+}
+
+.wysiwyg-upload__zone--over {
+  background: var(--wysiwyg-surface-hover);
+}
+
+/*
+ * Input pliku jest ukryty WIZUALNIE, ale nadal fokusowalny i klikalny przez `<label for>`.
+ *
+ * Świadomie BEZ `display: none`, `visibility: hidden` i `clip-path: inset(50%)`: każde
+ * z nich potrafi sprawić, że Chrome uzna kontrolkę za nieinteraktywną i odmówi otwarcia
+ * okna wyboru pliku. Ta kombinacja (mikroskopijny rozmiar + `opacity: 0`) to sprawdzony
+ * wzorzec dla własnych kontrolek plików.
+ */
+.wysiwyg-upload__file {
+  position: absolute;
+  inline-size: 0.1px;
+  block-size: 0.1px;
+  opacity: 0;
+  overflow: hidden;
+  z-index: -1;
+}
+
+.wysiwyg-upload__line {
+  margin: 0;
+}
+
+/*
+ * Wygląda jak odnośnik, ale jest przyciskiem — patrz komentarz w node view.
+ * `padding` pilnuje rozmiaru celu (SC 2.5.8), mimo że wizualnie to sam tekst.
+ */
+.wysiwyg-upload__pick {
+  display: inline-block;
+  border: 0;
+  background: none;
+  font-family: inherit;
+  min-block-size: 1.5rem;
+  padding: 0.25rem 0;
+  color: var(--wysiwyg-fg);
+  font-size: 0.875rem;
+  font-style: italic;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+.wysiwyg-upload__pick:hover {
+  color: var(--wysiwyg-accent);
+}
+
+.wysiwyg-upload__pick:focus-visible {
+  outline: 2px solid var(--wysiwyg-focus);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.wysiwyg-upload__pick--disabled {
+  color: var(--wysiwyg-disabled-fg);
+  text-decoration-style: dotted;
+  cursor: default;
+}
+
+/* --- Grafika strefy upuszczania (dekoracyjna) --- */
+
+.wysiwyg-upload__art {
+  position: relative;
+  inline-size: 3.125rem;
+  block-size: 3.75rem;
+  margin-inline: auto;
+  margin-block-end: 0.75rem;
+  display: inline-flex;
+  align-items: flex-start;
+  justify-content: center;
+  user-select: none;
+}
+
+.wysiwyg-upload__art-doc {
+  position: absolute;
+  inset-block-start: 0;
+  inline-size: 2.6875rem;
+  block-size: 3.5625rem;
+  color: var(--wysiwyg-border);
+}
+
+.wysiwyg-upload__art-corner {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-end: 0.25rem;
+  inline-size: 0.625rem;
+  block-size: 0.625rem;
+  color: var(--wysiwyg-border);
+}
+
+.wysiwyg-upload__art-badge {
+  position: absolute;
+  inset-block-end: 0;
+  inset-inline-end: 0;
+  inline-size: 1.75rem;
+  block-size: 1.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.75rem;
+  background: var(--wysiwyg-accent);
+  color: var(--wysiwyg-accent-fg);
+}
+
+.wysiwyg-upload__art-cloud {
+  inline-size: 1rem;
+  block-size: 1rem;
+}
+
+.wysiwyg-upload__hint,
+.wysiwyg-upload__limits,
+.wysiwyg-upload__hint-text {
+  color: var(--wysiwyg-muted);
+  font-size: 0.8125rem;
+}
+
+.wysiwyg-upload__limits {
+  margin-block: 0.5rem 0;
+}
+
+.wysiwyg-upload__preview {
+  flex: 0 0 auto;
+  inline-size: 8rem;
+  block-size: 8rem;
+  object-fit: cover;
+  border-radius: 6px;
+  background: var(--wysiwyg-surface-hover);
+}
+
+/* Podgląd lokalny przed zakończeniem wysyłki. */
+.wysiwyg-upload__preview--pending {
+  opacity: 0.6;
+}
+
+.wysiwyg-upload__field {
+  flex: 1 1 16rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.wysiwyg-upload__label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  margin-block-end: 0.25rem;
+}
+
+.wysiwyg-upload__input {
+  min-block-size: 2.25rem;
+  padding: 0 0.5rem;
+  border: 1px solid var(--wysiwyg-border);
+  border-radius: 6px;
+  background: var(--wysiwyg-bg);
+  color: var(--wysiwyg-fg);
+  font: inherit;
+  font-size: 0.875rem;
+}
+
+.wysiwyg-upload__input:focus-visible,
+.wysiwyg-upload__pick:focus-visible,
+.wysiwyg-upload__btn:focus-visible,
+.wysiwyg-upload__check input:focus-visible {
+  outline: 2px solid var(--wysiwyg-focus);
+  outline-offset: 2px;
+}
+
+.wysiwyg-upload__input[aria-invalid='true'] {
+  border-color: #b3261e;
+  border-width: 2px;
+}
+
+.wysiwyg-upload__hint-text {
+  margin-block: 0.25rem 0;
+}
+
+.wysiwyg-upload__error:empty {
+  display: none;
+}
+
+.wysiwyg-upload__error {
+  margin-block: 0.375rem 0;
+  color: #b3261e;
+  font-size: 0.8125rem;
+  font-weight: 500;
+}
+
+.wysiwyg-upload__check {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-block-start: 0.625rem;
+  font-size: 0.875rem;
+}
+
+/* SC 2.5.8 — checkbox też jest celem kliknięcia. */
+.wysiwyg-upload__check input {
+  inline-size: 1.125rem;
+  block-size: 1.125rem;
+}
+
+.wysiwyg-upload__actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-block-start: 0.875rem;
+}
+
+.wysiwyg-upload__btn {
+  min-block-size: 2.25rem;
+  padding-inline: 0.875rem;
+  border: 1px solid var(--wysiwyg-border);
+  border-radius: 6px;
+  background: var(--wysiwyg-bg);
+  color: var(--wysiwyg-fg);
+  font: inherit;
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+.wysiwyg-upload__btn--primary {
+  background: var(--wysiwyg-accent);
+  border-color: var(--wysiwyg-accent);
+  color: var(--wysiwyg-accent-fg);
+}
+
+.wysiwyg-upload__btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+/* --- Obraz: rozmiar i oblewanie tekstem --- */
+
+/*
+ * Kontener obrazu.
+ *
+ * `inline-size: fit-content` sprawia, że bez ustawionej szerokości kontener przylega
+ * dokładnie do obrazu — dzięki temu uchwyty i przycisk edycji siedzą NA obrazie, a nie obok.
+ * Gdy szerokość jest ustawiona, styl inline na kontenerze ją nadpisuje, a obraz wypełnia go
+ * w 100%.
+ */
+.wysiwyg-image {
+  position: relative;
+  display: block;
+  inline-size: fit-content;
+  max-inline-size: 100%;
+  /* Margines oblewania musi mieścić się w zadeklarowanej szerokości, inaczej obraz
+     wystaje poza kolumnę tekstu. */
+  box-sizing: border-box;
+  line-height: 0;
+}
+
+/*
+ * Oblewanie tekstem.
+ *
+ * `float` MUSI siedzieć na kontenerze o określonej szerokości — element pełnej szerokości
+ * nie zostawia miejsca, w które mógłby wpłynąć tekst.
+ */
+.wysiwyg-image--wrapped {
+  margin-block: 0.25rem 0.75rem;
+  /* Bez jawnej szerokości oblewanie nie ma sensu — domyślnie połowa kolumny. */
+  inline-size: 50%;
+}
+
+.wysiwyg-image--wrapped[style*='float: left'] {
+  margin-inline-end: 1.25rem;
+  /* Szerokość + margines nie mogą przekroczyć kolumny — stąd odjęcie marginesu. */
+  max-inline-size: calc(100% - 1.25rem);
+}
+
+.wysiwyg-image--wrapped[style*='float: right'] {
+  margin-inline-start: 1.25rem;
+  max-inline-size: calc(100% - 1.25rem);
+}
+
+.wysiwyg-image__img {
+  display: block;
+  inline-size: 100%;
+  block-size: auto;
+  border-radius: 4px;
+}
+
+.wysiwyg-image--selected .wysiwyg-image__img {
+  outline: 2px solid var(--wysiwyg-accent);
+  outline-offset: 2px;
+}
+
+/*
+ * Uchwyty i pasek pokazujemy, gdy obraz jest zaznaczony ALBO gdy fokus jest w jego
+ * kontrolkach.
+ *
+ * Sam warunek „zaznaczony" nie wystarczał: kliknięcie przycisku przenosi fokus poza obszar
+ * edycji, ProseMirror gubi zaznaczenie węzła i kontrolki znikały w trakcie pracy — nie dało
+ * się wykonać dwóch zmian z rzędu.
+ */
+.wysiwyg-image__handles {
+  display: none;
+}
+
+.wysiwyg-image--selected .wysiwyg-image__handles,
+.wysiwyg-image:focus-within .wysiwyg-image__handles {
+  display: block;
+}
+
+/*
+ * Kontener uchwytów nie może przechwytywać kliknięć — inaczej przy MAŁYCH obrazach pola
+ * chwytania (24×24 px) pokrywają cały obrazek i nie da się w niego kliknąć ani go zaznaczyć.
+ * Zdarzenia przyjmują wyłącznie same uchwyty.
+ */
+.wysiwyg-image__handles {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.wysiwyg-image__handle {
+  pointer-events: auto;
+}
+
+.wysiwyg-image__handle {
+  position: absolute;
+  /* Obszar chwytania ma 24x24 px (SC 2.5.8), mimo że widoczna kropka jest mniejsza. */
+  inline-size: 24px;
+  block-size: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  touch-action: none;
+}
+
+.wysiwyg-image__handle::after {
+  content: '';
+  inline-size: 10px;
+  block-size: 10px;
+  border: 2px solid var(--wysiwyg-accent);
+  border-radius: 2px;
+  background: var(--wysiwyg-bg);
+}
+
+/*
+ * Uchwyty siedzą WEWNĄTRZ obrysu obrazu, nie na zewnątrz.
+ *
+ * Przy -12px wystawały poza kontener, a że obraz potrafi zajmować pełną szerokość kolumny,
+ * wychodziły poza białą kartkę. Pole chwytania nadal ma 24×24 px (SC 2.5.8) — zmienia się
+ * tylko punkt zaczepienia.
+ */
+.wysiwyg-image__handle--nw { inset-block-start: 0; inset-inline-start: 0; cursor: nwse-resize; }
+.wysiwyg-image__handle--ne { inset-block-start: 0; inset-inline-end: 0; cursor: nesw-resize; }
+.wysiwyg-image__handle--sw { inset-block-end: 0; inset-inline-start: 0; cursor: nesw-resize; }
+.wysiwyg-image__handle--se { inset-block-end: 0; inset-inline-end: 0; cursor: nwse-resize; }
+
+/*
+ * Pasek kontrolek — równoważnik przeciągania dla klawiatury.
+ *
+ * NIE używamy `display: none` przy nieaktywnym obrazie: element ukryty w ten sposób
+ * wypada z kolejności Tab, a wtedy zmiana rozmiaru byłaby dostępna wyłącznie myszą
+ * (SC 2.1.1). Zamiast tego chowamy go wizualnie, ale zostawiamy fokusowalnym.
+ */
+.wysiwyg-image__bar {
+  position: absolute;
+  /* Pasek POD obrazem, wyśrodkowany. Wariant „nad obrazem" wystawał ponad górną krawędź
+     kartki, gdy obraz stał na początku dokumentu. */
+  inset-block-start: calc(100% + 8px);
+  inset-inline-start: 50%;
+  translate: -50% 0;
+  max-inline-size: 100%;
+  z-index: 2;
+  display: flex;
+  gap: 2px;
+  padding: 4px;
+  border: 1px solid var(--wysiwyg-border-subtle);
+  border-radius: 8px;
+  background: var(--wysiwyg-bg);
+  box-shadow: 0 4px 16px rgb(16 19 23 / 12%);
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.wysiwyg-image:not(.wysiwyg-image--selected):not(:focus-within) .wysiwyg-image__bar {
+  clip-path: inset(50%);
+  pointer-events: none;
+}
+
+/* Margines pod obrazem robi miejsce na pasek, żeby nie nachodził na kolejny akapit. */
+.wysiwyg-image--selected,
+.wysiwyg-image:focus-within {
+  margin-block-end: 3rem;
+}
+
+.wysiwyg-image__btn {
+  min-inline-size: 2rem;
+  min-block-size: 1.75rem;
+  padding-inline: 0.375rem;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--wysiwyg-fg);
+  font: inherit;
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
+.wysiwyg-image__btn:hover {
+  background: var(--wysiwyg-surface-hover);
+}
+
+.wysiwyg-image__btn:focus-visible {
+  outline: 2px solid var(--wysiwyg-focus);
+  outline-offset: 1px;
+}
+
+.wysiwyg-image__btn[aria-pressed='true'] {
+  background: var(--wysiwyg-surface-hover);
+  font-weight: 700;
+}
+
+@media (forced-colors: active) {
+  .wysiwyg-image__bar {
+    border: 1px solid CanvasText;
+    background: Canvas;
+  }
+
+  .wysiwyg-image__btn[aria-pressed='true'] {
+    background: Highlight;
+    color: HighlightText;
+  }
+
+  .wysiwyg-image__handle::after {
+    border-color: CanvasText;
+    background: Canvas;
+  }
+}
+
+/*
+ * Ikona edycji tekstu alternatywnego w rogu obrazu.
+ *
+ * Widoczna po najechaniu i po zaznaczeniu, ale NIE ukrywana przez `display: none` —
+ * inaczej wypadłaby z kolejności Tab i edycja opisu byłaby dostępna wyłącznie myszą.
+ */
+.wysiwyg-image__edit {
+  position: absolute;
+  inset-block-start: 8px;
+  inset-inline-end: 8px;
+  z-index: 1;
+  /* SC 2.5.8 Target Size. */
+  inline-size: 28px;
+  block-size: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: rgb(22 25 29 / 72%);
+  color: #fff;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 120ms ease;
+}
+
+.wysiwyg-image__edit svg {
+  inline-size: 15px;
+  block-size: 15px;
+}
+
+.wysiwyg-image:hover .wysiwyg-image__edit,
+.wysiwyg-image--selected .wysiwyg-image__edit,
+.wysiwyg-image__edit:focus-visible {
+  opacity: 1;
+}
+
+.wysiwyg-image__edit:focus-visible {
+  outline: 2px solid var(--wysiwyg-focus);
+  outline-offset: 2px;
+}
+
+@media (forced-colors: active) {
+  .wysiwyg-image__edit {
+    opacity: 1;
+    border: 1px solid ButtonText;
+    background: ButtonFace;
+    color: ButtonText;
+  }
+}
+
+/*
+ * Pole wyłączone lub tylko do odczytu — kontrolki obrazu i wgrywania muszą zniknąć.
+ *
+ * Sam `contenteditable="false"` na obszarze edycji NIE wystarcza: pasek rozmiaru, uchwyty,
+ * przycisk edycji opisu i formularz wgrywania to zwykłe elementy interaktywne wewnątrz
+ * node view, więc dalej dawały się kliknąć i przejść Tabem — użytkownik mógł zmieniać obraz
+ * w polu, które formularz uznaje za nieedytowalne.
+ *
+ * `display: none` zamiast `pointer-events: none`, bo usuwa je również z kolejności Tab.
+ */
+.wysiwyg--disabled .wysiwyg-image__bar,
+.wysiwyg--disabled .wysiwyg-image__edit,
+.wysiwyg--disabled .wysiwyg-image__handles,
+.wysiwyg--readonly .wysiwyg-image__bar,
+.wysiwyg--readonly .wysiwyg-image__edit,
+.wysiwyg--readonly .wysiwyg-image__handles {
+  display: none;
+}
+
+/* Niedokończony kontener wgrywania w wyłączonym polu przestaje przyjmować pliki. */
+.wysiwyg--disabled .wysiwyg-upload__zone,
+.wysiwyg--disabled .wysiwyg-upload__field,
+.wysiwyg--readonly .wysiwyg-upload__zone,
+.wysiwyg--readonly .wysiwyg-upload__field {
+  pointer-events: none;
+  opacity: 0.55;
+}
+
+.wysiwyg--disabled .wysiwyg-upload__file,
+.wysiwyg--readonly .wysiwyg-upload__file {
+  display: none;
+}

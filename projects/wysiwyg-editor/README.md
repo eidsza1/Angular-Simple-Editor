@@ -3,7 +3,7 @@
 Edytor tekstu sformatowanego dla Angulara, zbudowany na Tiptap 3, z dostępnością
 traktowaną jako wymaganie, a nie dodatek. Celem jest **WCAG 2.2 na poziomie AA**.
 
-![Edytor WYSIWYG](docs/screenshots/01-edytor.png)
+![Edytor WYSIWYG](../../docs/screenshots/01-edytor.png)
 
 ## Dlaczego jeszcze jeden edytor
 
@@ -28,13 +28,13 @@ bez `alt`, żadna ilość ARIA tego nie naprawi.
 
 ## Pasek narzędzi
 
-![Pasek narzędzi](docs/screenshots/02-toolbar.png)
+![Pasek narzędzi](../../docs/screenshots/02-toolbar.png)
 
 Cały pasek to **jeden przystanek Tab** — wchodzisz w niego raz, a między przyciskami
 poruszasz się strzałkami (wzorzec roving tabindex z APG). `Alt+F10` przenosi fokus z treści
 na pasek, `Escape` wraca do treści.
 
-![Wskaźnik fokusu przy nawigacji klawiaturą](docs/screenshots/09-fokus-klawiatura.png)
+![Wskaźnik fokusu przy nawigacji klawiaturą](../../docs/screenshots/09-fokus-klawiatura.png)
 
 Wyłączone przyciski **zostają** w kolejności nawigacji i dostają `aria-disabled` zamiast
 atrybutu `disabled` — inaczej „Cofnij" znikałoby i wracało z paska, co dezorientuje.
@@ -79,7 +79,7 @@ jednoczesne użycie obu daje ostrzeżenie Angulara i rozjazd stanu.
 
 ## Konfiguracja
 
-Cała konfiguracja mieszka w jednym pliku: **[`projects/demo/src/app/wysiwyg.config.ts`](projects/demo/src/app/wysiwyg.config.ts)**,
+Cała konfiguracja mieszka w jednym pliku: **[`projects/demo/src/app/wysiwyg.config.ts`](../demo/src/app/wysiwyg.config.ts)**,
 podpiętym w `app.config.ts`:
 
 ```ts
@@ -139,18 +139,18 @@ image: {
 
 ## Obrazy
 
-![Kontener wgrywania](docs/screenshots/06-wgrywanie.png)
+![Kontener wgrywania](../../docs/screenshots/06-wgrywanie.png)
 
 Kliknięcie „Wstaw obraz" wstawia kontener w miejscu kursora. Po wybraniu pliku pojawia się
 podgląd i formularz opisu.
 
-![Tekst alternatywny](docs/screenshots/05-alt-text.png)
+![Tekst alternatywny](../../docs/screenshots/05-alt-text.png)
 
 **Tekst alternatywny jest wymagany** albo trzeba jawnie zaznaczyć „obraz dekoracyjny".
 Trzeciej drogi nie ma (SC 1.1.1). Pusty opis blokuje wstawienie, oznacza pole
 `aria-invalid`, pokazuje komunikat i przenosi na nie fokus.
 
-![Rozmiar i oblewanie](docs/screenshots/04-obraz-kontrolki.png)
+![Rozmiar i oblewanie](../../docs/screenshots/04-obraz-kontrolki.png)
 
 Kliknięcie obrazu pokazuje pasek: gotowe szerokości (25/50/75/100 %) i oblewanie tekstem.
 Rozmiar zmienisz też przeciągając róg — ale **przeciąganie nie jest jedyną drogą**, bo samo
@@ -159,14 +159,14 @@ z wypełnioną wartością (SC 3.3.7).
 
 ## Widok źródła
 
-![Widok źródła HTML](docs/screenshots/07-zrodlo.png)
+![Widok źródła HTML](../../docs/screenshots/07-zrodlo.png)
 
 Przełącznik działa jak „Source" w CKEditorze. Treść wpisana w tym widoku **też przechodzi
 przez sanityzację** — pole tekstowe jest pełnoprawną drogą wejścia HTML.
 
 ## Motyw ciemny
 
-![Motyw ciemny](docs/screenshots/08-ciemny.png)
+![Motyw ciemny](../../docs/screenshots/08-ciemny.png)
 
 Motyw idzie za `prefers-color-scheme`; można go wymusić atrybutem `data-theme="dark"`
 albo `"light"`. Obsłużony jest także tryb wysokiego kontrastu (`forced-colors`) — ikony są
