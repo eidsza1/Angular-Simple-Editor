@@ -33,6 +33,14 @@ export interface WysiwygSelectionState {
   readonly linkHref: string | null;
   readonly onImage: boolean;
   readonly imageAlt: string | null;
+  /** Czy kursor stoi w komórce tabeli — steruje panelem tabeli w pasku. */
+  readonly inTable: boolean;
+  /** Podpis tabeli pod kursorem. `null` poza tabelą — SC 3.3.7 przy edycji. */
+  readonly tableCaption: string | null;
+  /** Czy pierwszy wiersz tabeli składa się z komórek nagłówkowych (`aria-pressed`). */
+  readonly tableHeaderRow: boolean;
+  /** Czy pierwsza kolumna tabeli składa się z komórek nagłówkowych (`aria-pressed`). */
+  readonly tableHeaderColumn: boolean;
   readonly isEmptySelection: boolean;
 }
 
@@ -64,7 +72,16 @@ export const EMPTY_EDITOR_STATE: WysiwygEditorState = {
   alignment: null,
   canUndo: false,
   canRedo: false,
-  selection: { linkHref: null, onImage: false, imageAlt: null, isEmptySelection: true },
+  selection: {
+    linkHref: null,
+    onImage: false,
+    imageAlt: null,
+    inTable: false,
+    tableCaption: null,
+    tableHeaderRow: false,
+    tableHeaderColumn: false,
+    isEmptySelection: true,
+  },
   isEmpty: true,
 };
 
@@ -102,6 +119,47 @@ function resolveAlignment(editor: Editor): TextAlignment | null {
   return null;
 }
 
+interface TableSnapshot {
+  readonly caption: string;
+  readonly headerRow: boolean;
+  readonly headerColumn: boolean;
+}
+
+/**
+ * Stan tabeli, w której stoi kursor. `null`, gdy kursor jest poza tabelą.
+ *
+ * Czytamy węzeł wprost z zaznaczenia, a nie przez `editor.isActive('table')`: przy
+ * wyłączonej funkcji `table` typ węzła w ogóle nie istnieje w schemacie i `isActive`
+ * przewraca się na „Unknown node type".
+ */
+function readTableState(editor: Editor): TableSnapshot | null {
+  const $from = editor.state.selection.$from;
+  for (let depth = $from.depth; depth > 0; depth -= 1) {
+    const node = $from.node(depth);
+    if (node.type.spec['tableRole'] !== 'table') {
+      continue;
+    }
+
+    const rows = Array.from({ length: node.childCount }, (_, i) => node.child(i));
+    const isHeaderRow = (row: (typeof rows)[number]): boolean =>
+      row.childCount > 0 &&
+      Array.from({ length: row.childCount }, (_, i) => row.child(i)).every(
+        (cell) => cell.type.spec['tableRole'] === 'header_cell',
+      );
+
+    return {
+      caption: (node.attrs['caption'] as string | undefined) ?? '',
+      headerRow: rows.length > 0 && isHeaderRow(rows[0]!),
+      // Kolumna nagłówkowa liczy się tylko wtedy, gdy KAŻDY wiersz zaczyna się od `<th>`.
+      // Inaczej przycisk pokazywałby „wciśnięty" dla tabeli, która ma sam wiersz nagłówkowy.
+      headerColumn:
+        rows.length > 0 &&
+        rows.every((row) => row.firstChild?.type.spec['tableRole'] === 'header_cell'),
+    };
+  }
+  return null;
+}
+
 /**
  * Czysta funkcja — jeden odczyt całego stanu edytora, wołany **raz na klatkę** zamiast
  * kilkunastu wywołań `editor.isActive()` z szablonu przy każdej detekcji zmian.
@@ -111,6 +169,7 @@ function resolveAlignment(editor: Editor): TextAlignment | null {
 export function readEditorState(editor: Editor): WysiwygEditorState {
   const { blockType, headingLevel } = resolveBlockType(editor);
   const onImage = editor.isActive('image');
+  const table = readTableState(editor);
 
   const marks = {} as Record<WysiwygMarkName, boolean>;
   for (const name of MARK_NAMES) {
@@ -128,6 +187,10 @@ export function readEditorState(editor: Editor): WysiwygEditorState {
       linkHref: editor.isActive('link') ? ((editor.getAttributes('link')['href'] as string) ?? null) : null,
       onImage,
       imageAlt: onImage ? ((editor.getAttributes('image')['alt'] as string | undefined) ?? '') : null,
+      inTable: !!table,
+      tableCaption: table?.caption ?? null,
+      tableHeaderRow: table?.headerRow ?? false,
+      tableHeaderColumn: table?.headerColumn ?? false,
       isEmptySelection: editor.state.selection.empty,
     },
     isEmpty: editor.isEmpty,

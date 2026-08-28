@@ -9,6 +9,12 @@ import type { WysiwygFeature } from '../config/wysiwyg-feature.model';
 import { PasteSanitizeExtension } from '../extensions/paste-sanitize.extension';
 import { WysiwygKeymapExtension, type WysiwygKeymapOptions } from '../extensions/wysiwyg-keymap.extension';
 import { AccessibleImage } from '../extensions/accessible-image.extension';
+import {
+  AccessibleTable,
+  AccessibleTableCell,
+  AccessibleTableHeader,
+  AccessibleTableRow,
+} from '../extensions/accessible-table.extension';
 import { ImageUploadExtension } from '../extensions/image-upload.extension';
 import type { WysiwygMessages } from '../config/wysiwyg-messages';
 import type { WysiwygSanitizerLike } from '../sanitize/wysiwyg-sanitizer';
@@ -102,6 +108,21 @@ export function buildExtensions(cfg: WysiwygEditorConfig, deps: ExtensionDeps): 
         messages: deps.messages,
         announce: deps.announce,
       }),
+    );
+  }
+
+  if (has('table')) {
+    // Kolejność bez znaczenia, ale komplet jest OBOWIĄZKOWY: bez `tableRow`, `tableCell`
+    // i `tableHeader` schemat nie ma z czego zbudować tabeli, a `insertTable()` przewraca
+    // się na brakującym typie węzła.
+    extensions.push(
+      AccessibleTable.configure({
+        messages: deps.messages,
+        announce: deps.announce,
+      }),
+      AccessibleTableRow,
+      AccessibleTableHeader,
+      AccessibleTableCell,
     );
   }
 

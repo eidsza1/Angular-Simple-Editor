@@ -18,6 +18,35 @@ a strzałkami przejdziesz między przyciskami. Zasady, na których to zbudowano,
 <li>Wyrównanie tekstu i indeksy: x<sup>2</sup>, H<sub>2</sub>O</li>
 <li>Podgląd i edycja źródła HTML</li>
 </ul>
+<h3>Tabela</h3>
+<p>Postaw kursor w tabeli, a przycisk „Wstaw tabelę" zmieni się w „Edytuj tabelę".
+<code>Tab</code> przechodzi do następnej komórki, a z ostatniej <strong>wychodzi z tabeli</strong>
+zamiast dodać wiersz; <code>Escape</code> wychodzi z dowolnej komórki.</p>
+<table>
+<caption>Kryteria WCAG, które rozstrzygnęły projekt tabel</caption>
+<tbody>
+<tr>
+<th scope="col">Kryterium</th>
+<th scope="col">Poziom</th>
+<th scope="col">Co z niego wynika</th>
+</tr>
+<tr>
+<th scope="row">1.3.1 Informacje i relacje</th>
+<td>A</td>
+<td>Każdy <code>th</code> ma <code>scope</code> liczony z położenia w siatce</td>
+</tr>
+<tr>
+<th scope="row">2.1.2 Brak pułapki klawiaturowej</th>
+<td>A</td>
+<td>Tab z ostatniej komórki wychodzi z tabeli</td>
+</tr>
+<tr>
+<th scope="row">2.5.8 Rozmiar celu</th>
+<td>AA</td>
+<td>Nie ma uchwytów zmiany szerokości kolumn: mają 5 px zamiast wymaganych 24 i działają tylko myszą</td>
+</tr>
+</tbody>
+</table>
 <p><img src="przyklad.png" alt="Gradient od granatu do fioletu, obraz przykładowy" style="width: 50%; float: left"></p>
 <p>Kliknij obraz obok, żeby zobaczyć jego pasek narzędzi. Możesz zmienić szerokość
 przeciągając róg albo przyciskami — a także ustawić, z której strony ma go opływać tekst.

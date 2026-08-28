@@ -29,6 +29,33 @@ export interface WysiwygImageConfig {
   readonly maxInlineBytes: number;
 }
 
+export interface WysiwygTableConfig {
+  /** Wartości początkowe w panelu wstawiania. */
+  readonly defaultRows: number;
+  readonly defaultCols: number;
+  /**
+   * Górne ograniczenie rozmiaru wstawianej tabeli.
+   *
+   * To nie jest ochrona przed wydajnością, tylko przed niedostępną treścią: tabela szersza
+   * niż kilkanaście kolumn jest nie do przejścia czytnikiem ekranu i nie mieści się przy
+   * powiększeniu do 400 % (SC 1.4.10). Autor, który naprawdę potrzebuje więcej, podnosi
+   * limit świadomie.
+   */
+  readonly maxRows: number;
+  readonly maxCols: number;
+  /** Domyślne zaznaczenie pola „pierwszy wiersz to nagłówki" w panelu wstawiania. */
+  readonly withHeaderRow: boolean;
+  readonly withHeaderColumn: boolean;
+  /**
+   * Czy `<caption>` jest wymagany przy wstawianiu.
+   *
+   * Domyślnie `true`. Tabela bez podpisu zmusza użytkownika czytnika ekranu do wejścia
+   * w komórki, żeby w ogóle zorientować się, czego dotyczy — a lista tabel w rotorze staje
+   * się listą nierozróżnialnych pozycji „tabela".
+   */
+  readonly requireCaption: boolean;
+}
+
 /**
  * `system` oznacza podążanie za `prefers-color-scheme`; pozostałe wartości wymuszają motyw.
  */
@@ -69,6 +96,7 @@ export interface WysiwygEditorConfig {
    */
   readonly paperMaxWidth: string;
   readonly image: WysiwygImageConfig;
+  readonly table: WysiwygTableConfig;
   readonly link: { readonly autolink: boolean };
 }
 
@@ -89,6 +117,7 @@ export const WYSIWYG_DEFAULT_CONFIG: WysiwygEditorConfig = {
     'link',
     'superscript',
     'subscript',
+    'table',
     'textAlign',
     'image',
     'sourceView',
@@ -107,6 +136,15 @@ export const WYSIWYG_DEFAULT_CONFIG: WysiwygEditorConfig = {
     maxFiles: 3,
     allowBase64: false,
     maxInlineBytes: 300_000,
+  },
+  table: {
+    defaultRows: 3,
+    defaultCols: 3,
+    maxRows: 30,
+    maxCols: 12,
+    withHeaderRow: true,
+    withHeaderColumn: false,
+    requireCaption: true,
   },
   link: { autolink: true },
 };
@@ -127,6 +165,7 @@ export function mergeWysiwygConfig(
     ...base,
     ...overrides,
     image: { ...base.image, ...overrides.image },
+    table: { ...base.table, ...overrides.table },
     link: { ...base.link, ...overrides.link },
   } as WysiwygEditorConfig;
 }

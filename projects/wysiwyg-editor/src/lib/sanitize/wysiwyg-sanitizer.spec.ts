@@ -153,9 +153,43 @@ describe('WysiwygSanitizer', () => {
       expect(sanitizer.sanitize(html)).toBe(html);
     });
 
-    it('usuwa tabelę — funkcja nie jest jeszcze wspierana przez schemat', () => {
+    it('przepuszcza tabelę razem z podpisem i scaleniami komórek', () => {
+      const out = sanitizer.sanitize(
+        '<table><caption>Ceny</caption><tbody>' +
+          '<tr><th scope="col" colspan="2">Rok</th></tr>' +
+          '<tr><td rowspan="2">A</td><td>B</td></tr>' +
+          '</tbody></table>',
+      );
+      expect(out).toContain('<caption>Ceny</caption>');
+      expect(out).toContain('colspan="2"');
+      expect(out).toContain('rowspan="2"');
+    });
+
+    // SC 1.3.1: bez `scope` czytnik nie wie, czy `<th>` opisuje wiersz, czy kolumnę.
+    // HTML wchodzi też bokiem — z widoku źródła, z `writeValue()` i ze schowka.
+    it('dopisuje brakujący scope: pierwszy wiersz opisuje kolumny', () => {
       const out = sanitizer.sanitize('<table><tr><th>H</th><td>D</td></tr></table>');
-      expect(out).not.toContain('<table');
+      expect(out).toContain('<th scope="col">H</th>');
+    });
+
+    it('dopisuje brakujący scope: nagłówek w kolejnym wierszu opisuje swój wiersz', () => {
+      const out = sanitizer.sanitize(
+        '<table><tr><th>Rok</th><th>Kwota</th></tr><tr><th>2026</th><td>10</td></tr></table>',
+      );
+      expect(out).toContain('<th scope="row">2026</th>');
+    });
+
+    it('nie nadpisuje scope podanego jawnie', () => {
+      const out = sanitizer.sanitize('<table><tr><th scope="rowgroup">H</th></tr></table>');
+      expect(out).toContain('scope="rowgroup"');
+    });
+
+    // `<colgroup>` niesie wyłącznie szerokości w pikselach, których nie renderujemy.
+    it('usuwa colgroup', () => {
+      const out = sanitizer.sanitize(
+        '<table><colgroup><col style="width: 120px"></colgroup><tr><td>A</td></tr></table>',
+      );
+      expect(out).not.toContain('<col');
     });
 
     it('zwraca pusty string dla pustego wejścia', () => {

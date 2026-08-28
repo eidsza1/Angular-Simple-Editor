@@ -16,6 +16,7 @@ export type {
   UploadedImage,
   WysiwygEditorConfig,
   WysiwygImageConfig,
+  WysiwygTableConfig,
 } from './lib/config/wysiwyg-config.model';
 
 export { ALL_TEXT_ALIGNMENTS, ALL_WYSIWYG_FEATURES } from './lib/config/wysiwyg-feature.model';
@@ -52,3 +53,19 @@ export {
 export type { SanitizePolicy } from './lib/sanitize/sanitize-policy';
 
 export { PasteSanitizeExtension } from './lib/extensions/paste-sanitize.extension';
+export {
+  AccessibleTable,
+  AccessibleTableCell,
+  AccessibleTableHeader,
+  AccessibleTableRow,
+  resolveHeaderScope,
+} from './lib/extensions/accessible-table.extension';
+export type {
+  AccessibleTableOptions,
+  TableCellRect,
+  TableHeaderScope,
+} from './lib/extensions/accessible-table.extension';
+export type {
+  TableInsertEvent,
+  WysiwygTableAction,
+} from './lib/toolbar/wysiwyg-table-button.component';

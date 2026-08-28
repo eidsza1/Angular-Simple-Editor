@@ -31,6 +31,9 @@ export const WYSIWYG_CONFIG: DeepPartial<WysiwygEditorConfig> = {
     'highlight',
     'link',
 
+    // --- tabele ---
+    'table',
+
     // --- indeksy ---
     'superscript',
     'subscript',
@@ -79,6 +82,24 @@ export const WYSIWYG_CONFIG: DeepPartial<WysiwygEditorConfig> = {
     upload: (file: File) => Promise.resolve({ src: URL.createObjectURL(file) }),
   },
 
+  /**
+   * Tabela. `requireCaption` trzymamy włączone: bez `<caption>` tabela jest w rotorze
+   * czytnika nierozróżnialna od każdej innej, a użytkownik musi wejść w komórki, żeby
+   * w ogóle zorientować się, czego dotyczy.
+   *
+   * Limity rozmiaru to nie ochrona wydajności, tylko czytelności — tabela szersza niż
+   * kilkanaście kolumn nie mieści się przy powiększeniu do 400 % (SC 1.4.10).
+   */
+  table: {
+    defaultRows: 3,
+    defaultCols: 3,
+    maxRows: 30,
+    maxCols: 12,
+    withHeaderRow: true,
+    withHeaderColumn: false,
+    requireCaption: true,
+  },
+
   link: { autolink: true },
 
   /** Podstawienia w trakcie pisania: `- ` → lista, `# ` → nagłówek, `**x**` → pogrubienie. */
@@ -96,8 +117,8 @@ export const WYSIWYG_CONFIG: DeepPartial<WysiwygEditorConfig> = {
    * Motyw początkowy: `system` (za ustawieniem przeglądarki), `light` albo `dark`.
    * Przycisk ze słońcem/księżycem w pasku przełącza go w trakcie pracy.
    */
-  theme: 'dark',
+  theme: 'system',
 
   /** Pasek przyklejony do górnej krawędzi przy przewijaniu długiej treści. */
-  stickyToolbar: false,
+  stickyToolbar: true,
 };

@@ -41,15 +41,9 @@ import type { CommandDescriptor } from '../core/command-registry';
     '[attr.aria-disabled]': 'disabledState() ? "true" : null',
     '[class.wysiwyg-btn--active]': 'pressed()',
     '[class.wysiwyg-btn--disabled]': 'disabledState()',
-    '[class.wysiwyg-btn--labelled]': 'visibleLabel()',
     '(click)': 'onActivate($event)',
   },
-  template: `
-    <wysiwyg-icon [name]="command().icon" />
-    @if (visibleLabel(); as text) {
-      <span class="wysiwyg-btn__text">{{ text }}</span>
-    }
-  `,
+  template: `<wysiwyg-icon [name]="command().icon" />`,
 })
 export class WysiwygToolbarButtonComponent extends WysiwygToolbarItem {
   readonly elementRef = inject<ElementRef<HTMLElement>>(ElementRef);
@@ -58,13 +52,6 @@ export class WysiwygToolbarButtonComponent extends WysiwygToolbarItem {
   readonly label = input.required<string>();
   readonly pressed = input(false);
   readonly disabledState = input(false);
-  /**
-   * Widoczny podpis obok ikony.
-   *
-   * SC 2.5.3 Label in Name: nazwa dostępna (`aria-label`) MUSI zawierać ten tekst, inaczej
-   * użytkownik sterowania głosem powie to, co widzi, a system tego nie rozpozna.
-   */
-  readonly visibleLabel = input<string>('');
 
   readonly activate = output<CommandDescriptor>();
 

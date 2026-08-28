@@ -22,6 +22,7 @@ bez `alt`, żadna ilość ARIA tego nie naprawi.
 | Bloki | nagłówki H1–H6, listy punktowane i numerowane, cytat, blok kodu |
 | Układ | wyrównanie do lewej, wyśrodkowanie, do prawej, justowanie |
 | Obrazy | wgrywanie, przeciągnij i upuść, zmiana rozmiaru, oblewanie tekstem, wymagany tekst alternatywny |
+| Tabele | wstawianie o zadanej liczbie wierszy i kolumn, dodawanie i usuwanie wierszy i kolumn, nagłówki z wyliczanym `scope`, wymagany `<caption>`, wyjście z tabeli klawiaturą |
 | Widok | przełącznik podglądu i edycji źródła HTML, przełącznik motywu jasny/ciemny |
 | Integracja | `ControlValueAccessor`, czyli `formControlName` i `[(ngModel)]` |
 | Bezpieczeństwo | sanityzacja na wejściu, przy wklejaniu, w widoku źródła i na wyjściu |
@@ -105,7 +106,7 @@ features: [
   'bold', 'italic', 'strike', 'code', 'underline', 'highlight', 'link',
   'superscript', 'subscript',
   'textAlign',
-  'image',
+  'image', 'table',
   'sourceView', 'themeToggle',
 ]
 ```
@@ -123,6 +124,10 @@ features: [
 | `image.upload` | brak | `(file, signal) => Promise<{ src }>`. Bez tego zostaje tylko pole adresu URL |
 | `image.maxFileBytes` | `5 MB` | Limit rozmiaru pojedynczego pliku |
 | `image.allowBase64` | `false` | Osadzanie w treści jako `data:` — patrz ostrzeżenie niżej |
+| `table.defaultRows` / `table.defaultCols` | `3` / `3` | Wartości początkowe w panelu wstawiania |
+| `table.maxRows` / `table.maxCols` | `30` / `12` | Górny limit rozmiaru. To ograniczenie czytelności, nie wydajności — tabela szersza niż kilkanaście kolumn nie mieści się przy powiększeniu do 400 % |
+| `table.withHeaderRow` / `table.withHeaderColumn` | `true` / `false` | Domyślny stan pól wyboru w panelu wstawiania |
+| `table.requireCaption` | `true` | Blokuje wstawienie tabeli bez tytułu |
 | `useTextboxRole` | `true` | `role="textbox"` na obszarze edycji |
 
 ### Wgrywanie obrazów
@@ -157,6 +162,41 @@ Kliknięcie obrazu pokazuje pasek: gotowe szerokości (25/50/75/100 %) i oblewan
 Rozmiar zmienisz też przeciągając róg — ale **przeciąganie nie jest jedyną drogą**, bo samo
 byłoby naruszeniem SC 2.1.1 (poziom A). Ikona ołówka otwiera ten sam formularz opisu,
 z wypełnioną wartością (SC 3.3.7).
+
+## Tabele
+
+![Panel tabeli](docs/screenshots/10-tabela.png)
+
+Przycisk „Wstaw tabelę" ma **własną sekcję paska, zaraz za stylem tekstu** — tabela nie
+jest formatowaniem znaku ani wstawianym obiektem, tylko strukturą dokumentu. Otwiera panel
+z **liczbą wierszy i kolumn**, wyborem nagłówków i polem tytułu. Kiedy kursor stoi w tabeli, ten sam przycisk nazywa się „Edytuj tabelę"
+i pokazuje komendy: wiersz powyżej/poniżej, kolumna z lewej/z prawej, usuwanie, przełączniki
+nagłówków (`aria-pressed`) oraz usunięcie tabeli. Panel **zostaje otwarty** po każdej
+komendzie, więc kilka wierszy dodaje się jednym ciągiem.
+
+Świadomie **nie ma popularnej siatki „najedź i wybierz 4×3"**: jej komórki mają około 16 px,
+czyli poniżej progu SC 2.5.8 Target Size, a wybór rozmiaru zależy tam od precyzyjnego ruchu
+wskaźnikiem. Pola liczbowe działają tak samo myszą, klawiaturą i sterowaniem głosem.
+
+Przykładowa treść w demo zawiera gotową tabelę — możesz na niej od razu sprawdzić `Tab`,
+`Escape` i przełączniki nagłówków, zamiast wstawiać własną.
+
+Cztery rzeczy dzieją się bez udziału autora treści:
+
+- **`scope` na każdym `<th>`** jest przeliczany po każdej zmianie dokumentu na podstawie
+  POŁOŻENIA komórki w siatce (`col`, `row`, `colgroup`, `rowgroup`). Dodanie kolumny na
+  początku zamienia „nagłówek wiersza" w zwykły nagłówek — atrybut podąża za zmianą.
+  Bez tego czytnik ekranu czyta przy komórkach złe nagłówki albo żadnych (SC 1.3.1).
+- **`<caption>` jest wymagany** (`table.requireCaption`) i trzymany jako **atrybut węzła**,
+  a nie jego dziecko: `TableMap` zakłada, że każde dziecko `table` jest wierszem.
+- **`Tab` w ostatniej komórce wychodzi z tabeli**, zamiast dodać wiersz jak w domyślnym
+  keymapie Tiptapa. Tamto zachowanie jest pułapką klawiaturową (SC 2.1.2, poziom A) —
+  użytkownik klawiatury nigdy nie opuściłby tabeli. `Escape` to druga droga wyjścia,
+  z dowolnej komórki.
+- **Zmiana szerokości kolumn myszą jest wyłączona.** Uchwyt ma 5 px (SC 2.5.8) i działa
+  wyłącznie wskaźnikiem (SC 2.1.1). Tabela zwęża się razem z kolumną tekstu, a nadmiar
+  przejmuje poziome przewijanie obszaru wokół niej — obszaru z `role="region"`,
+  `aria-label` i `tabindex="0"`, bo obszar przewijalny musi być osiągalny z klawiatury.
 
 ## Widok źródła
 
@@ -193,6 +233,10 @@ HTML przechodzi przez sanityzację na **czterech** drogach: `writeValue()`, wkle
 Warstwy obrony: schemat ProseMirror (nie potrafi *reprezentować* `<script>`) → DOMPurify
 z własną, izolowaną instancją → sanitizer aplikacji konsumującej.
 
+Sanitizer nie tylko usuwa — **domyka też wymagania WCAG**: obraz bez `alt` dostaje `alt=""`,
+a `<th>` bez `scope` dostaje `col` w pierwszym wierszu i `row` w każdym kolejnym. Przycisk
+„Wczytaj brudny HTML" w demo pokazuje to na tabeli sklejonej ręcznie, bez żadnego `scope`.
+
 Atrybut `style` jest filtrowany **deklaracja po deklaracji**, nie w całości. Jednym
 mechanizmem odcina to `position: fixed` (clickjacking), `background: url()` oraz
 `font-size` w pikselach — a to ostatnie egzekwuje SC 1.4.4 również na treści wklejanej
@@ -214,6 +258,8 @@ z Worda i Google Docs.
 - Rozmiary celów ≥ 24×24 px (SC 2.5.8), na urządzeniach dotykowych 44×44
 - `prefers-reduced-motion`, `forced-colors`, motyw ciemny
 - Wyłączone pole usuwa treść z kolejności Tab (`inert`), łącznie z kontrolkami obrazu
+- Tabele: wyliczany `scope`, wymagany `<caption>`, wyjście `Tab`/`Escape`, przewijalny
+  obszar z `role="region"` i `tabindex="0"`
 
 ## Czego automat nie sprawdzi
 
@@ -240,9 +286,11 @@ Wymaga Node zgodnego z `.nvmrc` (linia 24.x) — Angular 22 wymaga co najmniej `
 
 ## Znane ograniczenia
 
-- **Tabele nie są jeszcze zaimplementowane.** Wymagają własnych rozszerzeń na `scope`,
-  `<caption>` i wyjście z tabeli: domyślny keymap Tiptap w ostatniej komórce dodaje wiersz
-  zamiast wypuścić użytkownika, co jest pułapką klawiaturową (SC 2.1.2, poziom A).
+- W tabelach nie ma scalania i dzielenia komórek ani zmiany szerokości kolumn. Scalanie
+  komplikuje nawigację czytnikiem na tyle, że wymaga osobnego projektu obsługi; szerokości
+  wymagałyby drogi innej niż przeciąganie (SC 2.1.1, SC 2.5.8).
+- Świeżo wstawiona tabela ma puste komórki nagłówkowe, więc `axe` zgłasza wtedy
+  `empty-table-header` (poziom „minor"). Znika po wpisaniu nagłówków.
 - Adresy `blob:` z podglądu wgrywania żyją tylko w bieżącej sesji przeglądarki. Przed
   zapisem treści zastąp je trwałym URL-em ze swojego magazynu plików.
 - Wyszukiwanie i zamiana nie są dostępne — Tiptap oferuje je wyłącznie w płatnym Pro.

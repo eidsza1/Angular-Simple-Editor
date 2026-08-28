@@ -26,7 +26,14 @@
 /* Karta edytora — biała powierzchnia z delikatnym cieniem, jak arkusz w aplikacji biurowej. */
 .editor-card {
   border-radius: 12px;
-  overflow: hidden;
+  /*
+   * `clip`, a NIE `hidden`.
+   *
+   * `overflow: hidden` tworzy kontener przewijania, względem którego `position: sticky`
+   * przestaje mieć do czego się przyklejać — przy `stickyToolbar: true` pasek po prostu
+   * odjeżdżał z treścią. `clip` obcina rogi tak samo, ale kontenera przewijania nie tworzy.
+   */
+  overflow: clip;
   background: var(--page-card);
   box-shadow:
     0 0 0 1px var(--page-hairline),

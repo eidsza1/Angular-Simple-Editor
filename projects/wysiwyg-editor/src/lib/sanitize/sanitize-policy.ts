@@ -31,8 +31,17 @@ export const WYSIWYG_ALLOWED_TAGS: readonly string[] = [
   'code',
   'pre',
   'img',
-  // Znaczniki tabeli świadomie POZA allowlistą — schemat ProseMirror i tak ich nie uniesie,
-  // bo funkcja `table` nie jest jeszcze zaimplementowana. Wracają razem z nią.
+  // Tabela. `caption` jest na liście, bo bez podpisu tabela jest nierozróżnialna w rotorze
+  // czytnika; `colgroup`/`col` świadomie POZA listą — niosą wyłącznie szerokości w px,
+  // których i tak nie renderujemy (SC 1.4.10).
+  'table',
+  'caption',
+  'thead',
+  'tbody',
+  'tfoot',
+  'tr',
+  'th',
+  'td',
 ];
 
 export const WYSIWYG_ALLOWED_ATTR: readonly string[] = [
@@ -50,6 +59,11 @@ export const WYSIWYG_ALLOWED_ATTR: readonly string[] = [
   // Highlight zapisuje kolor w `data-color`; `ALLOW_DATA_ATTR: false` blokuje data-*
   // hurtowo, więc ten jeden trzeba dopuścić imiennie.
   'data-color',
+  // Komórki tabeli. `scope` jest tu obowiązkowe: bez niego czytnik ekranu nie wie, czy
+  // `<th>` opisuje wiersz, czy kolumnę (SC 1.3.1).
+  'colspan',
+  'rowspan',
+  'scope',
 ];
 
 export const WYSIWYG_FORBID_TAGS: readonly string[] = [
