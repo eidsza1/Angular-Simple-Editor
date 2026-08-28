@@ -86,9 +86,17 @@ export class RovingToolbarDirective implements OnDestroy {
     }
   }
 
-  /** Ustawia fokus na zapamiętanej kontrolce — wejście przez Alt+F10. */
+  /**
+   * Ustawia fokus na zapamiętanej kontrolce — wejście przez Alt+F10.
+   *
+   * `?? 0` NIE WYSTARCZY: zanim ktokolwiek dotknie paska, `FocusKeyManager` trzyma
+   * `activeItemIndex` równe **-1**, a nie `null`, więc operator wpuszczał tę wartość dalej.
+   * `setActiveItem(-1)` nie trafia w żaden element, `activeItem` zostaje `null` i menedżer
+   * po cichu nie robi nic — Alt+F10 działał dopiero po wcześniejszym kliknięciu w pasek.
+   */
   focusActiveItem(): void {
-    this.manager.setActiveItem(this.manager.activeItemIndex ?? 0);
+    const index = this.manager.activeItemIndex;
+    this.manager.setActiveItem(index != null && index >= 0 ? index : 0);
   }
 
   private applyTabIndexes(activeIndex: number): void {
