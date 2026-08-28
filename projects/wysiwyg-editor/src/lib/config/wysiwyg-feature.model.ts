@@ -2,10 +2,7 @@
  * Pojedyncza funkcja edytora. Steruje jednocześnie tym, które rozszerzenie Tiptap
  * zostanie zarejestrowane, i tym, które kontrolki pojawią się w toolbarze.
  *
- * Świadomie NIE ma tu `table` ani `fontSize`:
- *  - tabela jest odłożona na później (wymaga własnych rozszerzeń na `scope`, `<caption>`
- *    i wyjście z tabeli — domyślny keymap Tiptap tworzy pułapkę klawiaturową, SC 2.1.2),
- *  - rozmiar czcionki zastąpiła hierarchia nagłówków.
+ * Świadomie NIE ma tu `fontSize` — rozmiar czcionki zastąpiła hierarchia nagłówków.
  */
 export type WysiwygFeature =
   // marki
@@ -18,6 +15,8 @@ export type WysiwygFeature =
   | 'link'
   | 'superscript'
   | 'subscript'
+  // tabela — własna sekcja paska, zaraz za stylem tekstu
+  | 'table'
   // bloki
   | 'heading'
   | 'bulletList'
@@ -43,6 +42,7 @@ export const ALL_WYSIWYG_FEATURES: readonly WysiwygFeature[] = [
   'link',
   'superscript',
   'subscript',
+  'table',
   'heading',
   'bulletList',
   'orderedList',

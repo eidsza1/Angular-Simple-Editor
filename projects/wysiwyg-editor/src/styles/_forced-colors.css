@@ -76,3 +76,32 @@
     outline: 2px solid Highlight;
   }
 }
+
+@media (forced-colors: active) {
+  .wysiwyg__content-editable :is(table, th, td) {
+    border-color: CanvasText;
+  }
+
+  .wysiwyg__content-editable th {
+    /* Tła są nadpisywane przez system — nagłówek musi się odróżniać obramowaniem. */
+    border-width: 2px;
+  }
+
+  /* Półprzezroczyste tło zaznaczenia komórek w tym trybie po prostu nie istnieje. */
+  .wysiwyg__content-editable .selectedCell::after {
+    background: none;
+    outline: 2px solid Highlight;
+    outline-offset: -2px;
+  }
+
+  .wysiwyg-table-scroll:focus-visible {
+    outline: 2px solid Highlight;
+    box-shadow: none;
+  }
+
+  .wysiwyg-popover__btn[aria-pressed='true'] {
+    border-width: 2px;
+    background: Highlight;
+    color: HighlightText;
+  }
+}

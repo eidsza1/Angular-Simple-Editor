@@ -172,6 +172,17 @@ export class WysiwygSanitizer implements WysiwygSanitizerLike {
       if (tag === 'img' && !el.hasAttribute('alt')) {
         el.setAttribute('alt', '');
       }
+
+      // SC 1.3.1 — każda komórka nagłówkowa ma `scope`.
+      //
+      // W edytorze pilnuje tego rozszerzenie tabeli, ale HTML potrafi wejść też bokiem:
+      // z widoku źródła, z `writeValue()` albo ze schowka. Domykamy to na granicy: pierwszy
+      // wiersz opisuje kolumny, każdy kolejny `<th>` — swój wiersz.
+      if (tag === 'th' && !el.hasAttribute('scope')) {
+        const row = el.parentElement;
+        const isFirstRow = !!row && row.parentElement?.querySelector('tr') === row;
+        el.setAttribute('scope', isFirstRow ? 'col' : 'row');
+      }
     });
 
     this.purify = purify;

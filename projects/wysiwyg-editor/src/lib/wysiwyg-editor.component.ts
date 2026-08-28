@@ -30,6 +30,10 @@ import { buildExtensions } from './core/extension-factory';
 import { nextWysiwygId } from './a11y/wysiwyg-id';
 import { WysiwygAnnouncer } from './a11y/wysiwyg-announcer.service';
 import { WysiwygToolbarComponent } from './toolbar/wysiwyg-toolbar.component';
+import type {
+  TableInsertEvent,
+  WysiwygTableAction,
+} from './toolbar/wysiwyg-table-button.component';
 import type { CommandDescriptor } from './core/command-registry';
 
 /** Ustawia atrybut ARIA o wartości logicznej albo go usuwa. Nigdy nie zostawia `=""`. */
@@ -81,6 +85,10 @@ function setBooleanAria(el: Element, name: string, value: boolean): void {
       (applyLink)="onApplyLink($event)"
       (removeLink)="onRemoveLink()"
       (insertImage)="onInsertImage()"
+      [tableConfig]="resolvedConfig().table"
+      (insertTable)="onInsertTable($event)"
+      (tableAction)="onTableAction($event)"
+      (tableCaption)="onTableCaption($event)"
       (command)="onToolbarCommand($event)"
       (returnFocus)="focusCurrentView()"
       (toggleSource)="toggleSourceMode()"
@@ -660,6 +668,114 @@ export class WysiwygEditorComponent implements ControlValueAccessor, OnDestroy {
           'Sprawdź, czy schemat dopuszcza blok „imageUpload" w tym miejscu.',
       );
     }
+  }
+
+  /**
+   * Wstawia tabelę o rozmiarze podanym w panelu.
+   *
+   * Tabela ląduje ZA blokiem najwyższego poziomu, w którym stoi kursor — tak samo jak
+   * kontener obrazu i z tego samego powodu: wstawiona „w miejscu kursora" wewnątrz punktu
+   * listy albo cytatu jest formalnie dopuszczalna, ale nie do przejścia czytnikiem ekranu,
+   * a `insertTable()` i tak zwróciłby `true`, więc awaria byłaby cicha.
+   */
+  protected onInsertTable(event: TableInsertEvent): void {
+    const editor = this.ensureFocusedEditor();
+    if (!editor) {
+      return;
+    }
+
+    const { $from } = editor.state.selection;
+    const insertPos = $from.depth > 0 ? $from.after(1) : editor.state.doc.content.size;
+
+    // Pusty akapit jest tylko punktem zaczepienia: `replaceSelectionWith` w pustym bloku
+    // podmienia go na tabelę, więc nic po nim nie zostaje.
+    const chain = editor
+      .chain()
+      .focus()
+      .insertContentAt(insertPos, { type: 'paragraph' })
+      .setTextSelection(insertPos + 1)
+      .insertTable({ rows: event.rows, cols: event.cols, withHeaderRow: event.withHeaderRow });
+
+    if (event.withHeaderColumn) {
+      chain.toggleHeaderColumn();
+    }
+    if (event.caption) {
+      chain.updateAttributes('table', { caption: event.caption });
+    }
+
+    chain.scrollIntoView().run();
+
+    // Zmiana jest daleko od fokusu i czysto wizualna — bez ogłoszenia użytkownik czytnika
+    // nie wie, że cokolwiek się stało.
+    this.announcer.polite(this.messages.announceTableInserted(event.rows, event.cols));
+
+    if (typeof ngDevMode !== 'undefined' && ngDevMode && !this.core.hasNode('table')) {
+      console.warn(
+        `[wysiwyg-editor] Nie udało się wstawić tabeli. Pozycja: ${insertPos}. ` +
+          'Sprawdź, czy funkcja „table" jest włączona w konfiguracji.',
+      );
+    }
+  }
+
+  /**
+   * Operacje na tabeli pod kursorem.
+   *
+   * Świadomie BEZ `.focus()`: panel tabeli zostaje otwarty, żeby dało się dodać kilka
+   * wierszy pod rząd, a przeniesienie fokusu do treści wyrzuciłoby użytkownika z panelu
+   * po pierwszej komendzie. Zaznaczenie ProseMirror żyje w stanie, nie w fokusie DOM,
+   * więc komendy mają na czym działać.
+   *
+   * Przełączniki nagłówków NIE są ogłaszane — niosą je `aria-pressed` na sfokusowanym
+   * przycisku, a własne ogłoszenie dałoby podwójną mowę.
+   */
+  protected onTableAction(action: WysiwygTableAction): void {
+    const editor = this.core.editor;
+    if (!editor) {
+      return;
+    }
+
+    switch (action) {
+      case 'addRowBefore':
+      case 'addRowAfter':
+        editor.chain()[action]().run();
+        this.announcer.polite(this.messages.announceTableRowAdded);
+        break;
+      case 'deleteRow':
+        editor.chain().deleteRow().run();
+        this.announcer.polite(this.messages.announceTableRowDeleted);
+        break;
+      case 'addColumnBefore':
+      case 'addColumnAfter':
+        editor.chain()[action]().run();
+        this.announcer.polite(this.messages.announceTableColumnAdded);
+        break;
+      case 'deleteColumn':
+        editor.chain().deleteColumn().run();
+        this.announcer.polite(this.messages.announceTableColumnDeleted);
+        break;
+      case 'toggleHeaderRow':
+        editor.chain().toggleHeaderRow().run();
+        break;
+      case 'toggleHeaderColumn':
+        editor.chain().toggleHeaderColumn().run();
+        break;
+      case 'deleteTable':
+        // Tu fokus MUSI wrócić do treści: panel się zamyka, a kursor nie ma już tabeli,
+        // w której mógłby stać.
+        editor.chain().focus().deleteTable().run();
+        this.announcer.polite(this.messages.announceTableDeleted);
+        break;
+    }
+  }
+
+  /** Podpis jest atrybutem węzła `table`, więc zmienia się zwykłym `updateAttributes`. */
+  protected onTableCaption(caption: string): void {
+    const editor = this.core.editor;
+    if (!editor) {
+      return;
+    }
+    editor.chain().updateAttributes('table', { caption }).run();
+    this.announcer.polite(this.messages.announceTableCaptionUpdated);
   }
 
   /** Przekazywane do toolbara jako pole, nie metoda — musi być stabilną referencją. */

@@ -3,6 +3,11 @@ import { RovingToolbarDirective } from '../a11y/roving-toolbar.directive';
 import { WysiwygToolbarButtonComponent } from './wysiwyg-toolbar-button.component';
 import { WysiwygMenuButtonComponent, type WysiwygMenuOption } from './wysiwyg-menu-button.component';
 import { WysiwygLinkButtonComponent, type LinkSubmitEvent } from './wysiwyg-link-button.component';
+import {
+  WysiwygTableButtonComponent,
+  type TableInsertEvent,
+  type WysiwygTableAction,
+} from './wysiwyg-table-button.component';
 import { ALL_TEXT_ALIGNMENTS } from '../config/wysiwyg-feature.model';
 import type { HeadingLevel, TextAlignment } from '../config/wysiwyg-feature.model';
 import type { WysiwygIconName } from '../icons/wysiwyg-icon.component';
@@ -12,6 +17,7 @@ import {
   type CommandDescriptor,
 } from '../core/command-registry';
 import type { WysiwygMessages } from '../config/wysiwyg-messages';
+import type { WysiwygTableConfig } from '../config/wysiwyg-config.model';
 import type { WysiwygFeature } from '../config/wysiwyg-feature.model';
 import type { WysiwygEditorState } from '../core/editor-state.model';
 
@@ -36,6 +42,7 @@ interface RenderedGroup {
     WysiwygToolbarButtonComponent,
     WysiwygMenuButtonComponent,
     WysiwygLinkButtonComponent,
+    WysiwygTableButtonComponent,
   ],
   template: `
     <div
@@ -91,6 +98,25 @@ interface RenderedGroup {
           }
         </div>
 
+        <!-- Tabela ma WŁASNĄ grupę zaraz za stylem tekstu: to nie jest formatowanie znaku
+             ani wstawianie obiektu, tylko struktura dokumentu. -->
+        @if (group.id === 'textStyle' && showTable()) {
+          <div role="group" class="wysiwyg-toolbar__group" [attr.aria-label]="messages().groupTable">
+            <wysiwyg-table-button
+              [messages]="messages()"
+              [config]="tableConfig()"
+              [inTable]="state().selection.inTable"
+              [currentCaption]="state().selection.tableCaption ?? ''"
+              [currentHeaderRow]="state().selection.tableHeaderRow"
+              [currentHeaderColumn]="state().selection.tableHeaderColumn"
+              [disabledState]="disabled() || sourceMode()"
+              (insertTable)="insertTable.emit($event)"
+              (tableAction)="tableAction.emit($event)"
+              (captionApplied)="tableCaption.emit($event)"
+            />
+          </div>
+        }
+
         <!-- Wybór poziomu nagłówka tuż po grupie historii, zgodnie z układem paska. -->
         @if (group.id === 'history' && showHeadingMenu()) {
           <div role="group" class="wysiwyg-toolbar__group" [attr.aria-label]="messages().groupParagraph">
@@ -114,7 +140,6 @@ interface RenderedGroup {
             wysiwygToolbarButton
             [command]="imageCommand"
             [label]="messages().insertImage"
-            [visibleLabel]="messages().insertImageShort"
             [pressed]="false"
             [disabledState]="disabled()"
             (activate)="insertImage.emit()"
@@ -169,12 +194,16 @@ export class WysiwygToolbarComponent {
   readonly applyLink = output<LinkSubmitEvent>();
   readonly removeLink = output<void>();
   readonly insertImage = output<void>();
+  readonly insertTable = output<TableInsertEvent>();
+  readonly tableAction = output<WysiwygTableAction>();
+  readonly tableCaption = output<string>();
   readonly listSelected = output<string>();
 
   readonly currentHref = input<string>('');
 
   protected readonly showLink = computed(() => this.features().includes('link'));
   protected readonly showImage = computed(() => this.features().includes('image'));
+  protected readonly showTable = computed(() => this.features().includes('table'));
 
   /** Wstawianie obrazu nie jest komendą Tiptap — obsługuje je komponent nadrzędny. */
   protected readonly imageCommand: CommandDescriptor = {
@@ -186,6 +215,8 @@ export class WysiwygToolbarComponent {
     run: () => false,
     canRun: () => true,
   };
+
+  readonly tableConfig = input.required<WysiwygTableConfig>();
 
   readonly headingLevels = input<readonly HeadingLevel[]>([1, 2, 3, 4, 5, 6]);
   readonly alignments = input<readonly TextAlignment[]>(ALL_TEXT_ALIGNMENTS);

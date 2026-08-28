@@ -13,6 +13,7 @@ export interface WysiwygMessages {
   groupLists: string;
   groupScripts: string;
   groupAlign: string;
+  groupTable: string;
   groupInsert: string;
   groupView: string;
   groupHistory: string;
@@ -55,8 +56,47 @@ export interface WysiwygMessages {
 
   // obraz
   insertImage: string;
-  /** Krótki, WIDOCZNY podpis przycisku. Musi być zawarty w `insertImage` — SC 2.5.3. */
-  insertImageShort: string;
+
+  // tabela
+  /** Etykieta przycisku, gdy kursor jest POZA tabelą. */
+  insertTable: string;
+  /** Etykieta tego samego przycisku, gdy kursor stoi w tabeli. */
+  editTable: string;
+  tableRowsLabel: string;
+  tableColsLabel: string;
+  tableHeaderRow: string;
+  tableHeaderColumn: string;
+  tableCaptionLabel: string;
+  tableCaptionHint: string;
+  tableCaptionRequired: string;
+  tableSizeInvalid: (maxRows: number, maxCols: number) => string;
+  tableInsertSubmit: string;
+  tableCaptionApply: string;
+  tableGroupRows: string;
+  tableGroupColumns: string;
+  tableGroupHeaders: string;
+  tableAddRowBefore: string;
+  tableAddRowAfter: string;
+  tableDeleteRow: string;
+  tableAddColumnBefore: string;
+  tableAddColumnAfter: string;
+  tableDeleteColumn: string;
+  tableToggleHeaderRow: string;
+  tableToggleHeaderColumn: string;
+  tableDelete: string;
+  tableClose: string;
+  tableKeyboardHint: string;
+  /** Etykieta przewijalnego obszaru wokół tabeli — musi rozróżniać tabele na stronie. */
+  tableRegionLabel: (caption: string) => string;
+  tableRegionFallback: string;
+  announceTableInserted: (rows: number, cols: number) => string;
+  announceTableRowAdded: string;
+  announceTableRowDeleted: string;
+  announceTableColumnAdded: string;
+  announceTableColumnDeleted: string;
+  announceTableCaptionUpdated: string;
+  announceTableDeleted: string;
+  announceTableExit: string;
 
   // odnosnik
   linkUrlLabel: string;
@@ -129,6 +169,7 @@ export const WYSIWYG_MESSAGES_PL: WysiwygMessages = {
   groupLists: 'Akapit i listy',
   groupScripts: 'Indeksy',
   groupAlign: 'Wyrównanie',
+  groupTable: 'Tabela',
   groupInsert: 'Wstawianie',
   groupView: 'Widok',
   groupHistory: 'Historia',
@@ -168,7 +209,45 @@ export const WYSIWYG_MESSAGES_PL: WysiwygMessages = {
 
 
   insertImage: 'Wstaw obraz',
-  insertImageShort: 'Wstaw',
+
+  // tabela
+  insertTable: 'Wstaw tabelę',
+  editTable: 'Edytuj tabelę',
+  tableRowsLabel: 'Liczba wierszy',
+  tableColsLabel: 'Liczba kolumn',
+  tableHeaderRow: 'Pierwszy wiersz to nagłówki kolumn',
+  tableHeaderColumn: 'Pierwsza kolumna to nagłówki wierszy',
+  tableCaptionLabel: 'Tytuł tabeli',
+  tableCaptionHint: 'Krótko opisz, co zawiera tabela. Tytuł jest widoczny nad tabelą i czytany przez czytniki ekranu.',
+  tableCaptionRequired: 'Podaj tytuł tabeli.',
+  tableSizeInvalid: (maxRows, maxCols) =>
+    `Podaj od 1 do ${maxRows} wierszy i od 1 do ${maxCols} kolumn.`,
+  tableInsertSubmit: 'Wstaw tabelę',
+  tableCaptionApply: 'Zapisz tytuł',
+  tableGroupRows: 'Wiersze',
+  tableGroupColumns: 'Kolumny',
+  tableGroupHeaders: 'Nagłówki',
+  tableAddRowBefore: 'Wstaw wiersz powyżej',
+  tableAddRowAfter: 'Wstaw wiersz poniżej',
+  tableDeleteRow: 'Usuń wiersz',
+  tableAddColumnBefore: 'Wstaw kolumnę z lewej',
+  tableAddColumnAfter: 'Wstaw kolumnę z prawej',
+  tableDeleteColumn: 'Usuń kolumnę',
+  tableToggleHeaderRow: 'Wiersz nagłówkowy',
+  tableToggleHeaderColumn: 'Kolumna nagłówkowa',
+  tableDelete: 'Usuń tabelę',
+  tableClose: 'Zamknij',
+  tableKeyboardHint: 'W tabeli: Tab przechodzi do następnej komórki, Escape wychodzi z tabeli.',
+  tableRegionLabel: (caption) => `Tabela: ${caption}`,
+  tableRegionFallback: 'Tabela',
+  announceTableInserted: (rows, cols) => `Wstawiono tabelę ${rows} na ${cols}`,
+  announceTableRowAdded: 'Dodano wiersz',
+  announceTableRowDeleted: 'Usunięto wiersz',
+  announceTableColumnAdded: 'Dodano kolumnę',
+  announceTableColumnDeleted: 'Usunięto kolumnę',
+  announceTableCaptionUpdated: 'Zaktualizowano tytuł tabeli',
+  announceTableDeleted: 'Usunięto tabelę',
+  announceTableExit: 'Poza tabelą',
 
   linkUrlLabel: 'Adres odnośnika',
   linkApply: 'Zastosuj',
